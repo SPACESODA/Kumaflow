@@ -1,0 +1,23 @@
+{
+  "private": true,
+  "name": "webflow-multi-lang",
+  "description": "TypeScript-based extension with a sidebar panel. Adds a sidebar with a simple page.",
+  "version": "3.0.0",
+  "license": "MIT",
+  "type": "module",
+  "author": {
+    "name": "Your Name",
+    "email": "your@email.com",
+    "url": "https://yourwebsite.com"
+  },
+  "devDependencies": {
+    "typescript": "5.3.3",
+    "extension": "^2.1.3"
+  },
+  "scripts": {
+    "dev": "extension dev",
+    "start": "extension start",
+    "build": "extension build"
+  },
+  "dependencies": {}
+}
