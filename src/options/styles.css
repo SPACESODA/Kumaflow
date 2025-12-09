@@ -1,7 +1,7 @@
 :root {
   color-scheme: light;
   font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
-  background: radial-gradient(circle at 10% 20%, #f7fbff, #eef2ff 25%, #f8faff 50%);
+  background: radial-gradient(circle at 10% 20%, #f7fbff, #e6f0ff 25%, #f8faff 50%);
 }
 
 *,
@@ -108,7 +108,7 @@ body {
 }
 
 .toggle input:checked+.toggle_track {
-  background: #6366f1;
+  background: #146ef5;
 }
 
 .toggle input:checked+.toggle_track .toggle_thumb {
@@ -149,8 +149,8 @@ form {
 }
 
 .language_option:hover {
-  border-color: #6366f1;
-  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.08);
+  border-color: #146ef5;
+  box-shadow: 0 10px 30px rgba(20, 110, 245, 0.12);
 }
 
 .language_option input {
@@ -216,7 +216,7 @@ form[data-disabled='true'] .language_option {
 }
 
 .credit a {
-  color: #6366f1;
+  color: #146ef5;
   text-decoration: none;
   font-weight: 600;
 }
@@ -241,4 +241,8 @@ form[data-disabled='true'] .language_option {
   color: #64748b;
   font-size: 12px;
   line-height: 1.5;
+}
+
+.disclaimer + .disclaimer {
+  margin-top: 8px;
 }

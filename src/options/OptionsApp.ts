@@ -225,6 +225,12 @@ export default function initOptionsPage() {
   meta.appendChild(credit)
   meta.appendChild(repoLink)
 
+  const unofficialDisclaimer = document.createElement('p')
+  unofficialDisclaimer.className = 'disclaimer'
+  unofficialDisclaimer.style.marginBottom = '8px'
+  unofficialDisclaimer.textContent =
+    'This extension provides unofficial translations that may not be accurate. If you spot an issue or have ideas, please share them on GitHub.'
+
   const disclaimer = document.createElement('p')
   disclaimer.className = 'disclaimer'
   disclaimer.textContent =
@@ -233,6 +239,7 @@ export default function initOptionsPage() {
   hydrateSelection(form, enabledToggle, strictToggle, status)
   footer.appendChild(divider)
   footer.appendChild(meta)
+  footer.appendChild(unofficialDisclaimer)
   footer.appendChild(disclaimer)
   container.appendChild(footer)
 }

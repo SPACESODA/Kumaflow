@@ -1,6 +1,7 @@
 ## Do not translate the below words or terms!
 
 Webflow
+Made in Webflow
 Workspace / workspace / Workspaces / workspaces
 Designer
 Editor
@@ -11,3 +12,20 @@ CSS
 JS
 Head
 Footer
+Agency Workspace
+Agency
+Freelancer Workspace
+Freelancer
+Starter Workspace
+Starter
+Libraries
+2FA
+Adobe
+Adobe Fonts
+API token / API tokens
+CMS
+CMS collection / CMS Collection / CMS collections / CMS Collections
+App Gen
+Webflow Cloud
+Favicon / favicon
+Webclip / webclip
