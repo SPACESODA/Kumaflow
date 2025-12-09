@@ -5,32 +5,32 @@
   "name": "Webflow UI Localization",
   "description": "Swap Webflow dashboard UI text for Japanese or Traditional Chinese translations.",
   "icons": {
-    "16": "images/typescript.png",
-    "48": "images/typescript.png",
-    "128": "images/typescript.png"
+    "16": "src/images/typescript.png",
+    "48": "src/images/typescript.png",
+    "128": "src/images/typescript.png"
   },
   "action": {
     "default_icon": {
-      "48": "images/typescript.png"
+      "48": "src/images/typescript.png"
     },
     "default_title": "Webflow UI Localization"
   },
   "options_ui": {
-    "page": "options/index.html",
+    "page": "src/options/index.html",
     "open_in_tab": true
   },
   "background": {
-    "service_worker": "background.ts"
+    "service_worker": "src/background.ts"
   },
   "permissions": ["storage"],
   "content_scripts": [
     {
       "matches": [
         "https://webflow.com/dashboard*",
-        "https://preview.webflow.com*",
-        "https://*.design.webflow.com*"
+        "https://preview.webflow.com/*",
+        "https://*.design.webflow.com/*"
       ],
-      "js": ["content/scripts.ts"],
+      "js": ["src/content/scripts.ts"],
       "run_at": "document_idle"
     }
   ]

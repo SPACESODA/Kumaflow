@@ -151,7 +151,13 @@ export default function initOptionsPage() {
         <p class="eyebrow">Webflow UI Localization</p>
         <h1 class="title">Choose your language</h1>
         <p class="lede">
-          Switch Webflow&rsquo;s dashboard labels between Japanese and Traditional Chinese, or turn translations off to use English.
+          This extension translates the UI of Webflow&rsquo;s Dashboard and Designer. It may not translate every term; the goal is to make Webflow easier to use without distorting its terminology.
+        </p>
+        <p class="lede translation">
+          この拡張機能は Webflow のダッシュボードとデザイナーの UI を翻訳します。用語を歪めないようにするため、すべての文言は訳されない場合があります。
+        </p>
+        <p class="lede translation">
+          此擴充功能會翻譯 Webflow 的儀表板與 Designer 介面。為了避免混淆 Webflow 的術語，可能不會翻譯所有文字。
         </p>
       </div>
     </div>
@@ -163,7 +169,25 @@ export default function initOptionsPage() {
 
   const enabledToggle = renderToggle(container)
   const {form, status} = renderLanguages(container)
+  const footer = document.createElement('div')
+  footer.className = 'footer'
+  const divider = document.createElement('div')
+  divider.className = 'footer_divider'
+  const credit = document.createElement('p')
+  credit.className = 'credit'
+  credit.innerHTML = `Created with love by <a href="https://x.com/anthonycxc" target="_blank" rel="noreferrer">Anthony C.</a>`
+  const repoLink = document.createElement('a')
+  repoLink.className = 'repo_link'
+  repoLink.href = 'https://github.com/SPACESODA/Webflow-UI-Localization'
+  repoLink.target = '_blank'
+  repoLink.rel = 'noreferrer'
+  repoLink.textContent = 'View the GitHub repo'
+
   hydrateSelection(form, enabledToggle, status)
+  footer.appendChild(divider)
+  footer.appendChild(credit)
+  footer.appendChild(repoLink)
+  container.appendChild(footer)
 }
 
 initOptionsPage()

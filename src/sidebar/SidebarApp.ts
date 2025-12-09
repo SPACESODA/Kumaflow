@@ -13,14 +13,13 @@ function SidebarApp() {
       />
       <h1 class="sidebar_title">Sidebar Panel</h1>
       <p class="sidebar_description">
-        Learn more about creating cross-browser extensions at
+        Created with love by
         <a
-          href="https://extension.js.org"
+          href="https://x.com/anthonycxc"
           target="_blank"
         >
-          https://extension.js.org
+          Anthony C.
         </a>
-        .
       </p>
     </div>
   `

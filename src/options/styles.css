@@ -53,6 +53,12 @@ body {
   max-width: 600px;
 }
 
+.lede.translation {
+  font-size: 15px;
+  color: #475569;
+  margin-top: -8px;
+}
+
 .options_card {
   margin-top: 12px;
   padding: 24px;
@@ -177,4 +183,42 @@ form[data-disabled='true'] .language_option {
 .status[data-status='changed'] {
   color: #16a34a;
   font-weight: 600;
+}
+
+.footer {
+  margin-top: 24px;
+  padding-top: 12px;
+}
+
+.footer_divider {
+  height: 1px;
+  background: #e2e8f0;
+  margin-bottom: 12px;
+}
+
+.credit {
+  margin: 0 0 6px;
+  color: #475569;
+  font-size: 14px;
+}
+
+.credit a {
+  color: #6366f1;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.credit a:hover {
+  text-decoration: underline;
+}
+
+.repo_link {
+  display: inline-block;
+  font-size: 14px;
+  color: #0f172a;
+  text-decoration: none;
+}
+
+.repo_link:hover {
+  text-decoration: underline;
 }
