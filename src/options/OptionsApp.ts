@@ -1,9 +1,9 @@
 type LanguageCode = 'ja' | 'zh-TW'
 
-type Settings = {language: LanguageCode; enabled: boolean}
+type Settings = {language: LanguageCode; enabled: boolean; strictMatching: boolean}
 
 const DEFAULT_LANGUAGE: LanguageCode = 'ja'
-const DEFAULT_SETTINGS: Settings = {language: DEFAULT_LANGUAGE, enabled: true}
+const DEFAULT_SETTINGS: Settings = {language: DEFAULT_LANGUAGE, enabled: true, strictMatching: true}
 
 const languages: Array<{value: LanguageCode; label: string; nativeLabel: string}> =
   [
@@ -16,13 +16,16 @@ function getStorage(): chrome.storage.SyncStorageArea | chrome.storage.LocalStor
   return chrome.storage.local
 }
 
-function renderToggle(root: HTMLElement) {
+function renderToggle(
+  root: HTMLElement,
+  options: {name?: string; title?: string; description?: string} = {}
+) {
   const toggle = document.createElement('label')
   toggle.className = 'toggle'
 
   const checkbox = document.createElement('input')
   checkbox.type = 'checkbox'
-  checkbox.name = 'enabled'
+  checkbox.name = options.name ?? 'enabled'
 
   const track = document.createElement('span')
   track.className = 'toggle_track'
@@ -32,7 +35,9 @@ function renderToggle(root: HTMLElement) {
 
   const text = document.createElement('div')
   text.className = 'toggle_text'
-  text.innerHTML = `<strong>Enable translation</strong><span>Turn this off to keep Webflow in English.</span>`
+  text.innerHTML = `<strong>${options.title ?? 'Enable translation'}</strong><span>${
+    options.description ?? 'Turn this off to keep Webflow in English.'
+  }</span>`
 
   track.appendChild(thumb)
   toggle.appendChild(checkbox)
@@ -103,12 +108,21 @@ function toggleLanguageDisabled(form: HTMLFormElement, disabled: boolean) {
   }
 }
 
-function hydrateSelection(form: HTMLFormElement, enabledToggle: HTMLInputElement, status: HTMLElement) {
+function hydrateSelection(
+  form: HTMLFormElement,
+  enabledToggle: HTMLInputElement,
+  strictToggle: HTMLInputElement,
+  status: HTMLElement
+) {
   const storage = getStorage()
   storage.get(DEFAULT_SETTINGS, (result) => {
     const language = (result.language as LanguageCode) ?? DEFAULT_LANGUAGE
     const enabled =
       typeof result.enabled === 'boolean' ? result.enabled : DEFAULT_SETTINGS.enabled
+    const strictMatching =
+      typeof result.strictMatching === 'boolean'
+        ? result.strictMatching
+        : DEFAULT_SETTINGS.strictMatching
 
     const input = form.querySelector<HTMLInputElement>(`input[value="${language}"]`)
     if (input) {
@@ -116,6 +130,7 @@ function hydrateSelection(form: HTMLFormElement, enabledToggle: HTMLInputElement
     }
 
     enabledToggle.checked = enabled
+    strictToggle.checked = strictMatching
     toggleLanguageDisabled(form, !enabled)
 
     enabledToggle.addEventListener('change', (event) => {
@@ -124,6 +139,19 @@ function hydrateSelection(form: HTMLFormElement, enabledToggle: HTMLInputElement
       toggleLanguageDisabled(form, !nextEnabled)
       storage.set({enabled: nextEnabled}, () =>
         setStatus(status, nextEnabled ? 'Translation enabled' : 'Translation turned off')
+      )
+    })
+
+    strictToggle.addEventListener('change', (event) => {
+      const target = event.target as HTMLInputElement
+      const nextStrict = Boolean(target.checked)
+      storage.set({strictMatching: nextStrict}, () =>
+        setStatus(
+          status,
+          nextStrict
+            ? 'Partial translations avoided'
+            : 'Partial translations allowed (sub-phrases will change)'
+        )
       )
     })
 
@@ -168,6 +196,12 @@ export default function initOptionsPage() {
   root.querySelector('.options_shell')?.appendChild(container)
 
   const enabledToggle = renderToggle(container)
+  const strictToggle = renderToggle(container, {
+    name: 'strictMatching',
+    title: 'Avoid partial translations',
+    description:
+      'Only translate when the full text matches the dictionary entry. Prevents partial phrase changes.'
+  })
   const {form, status} = renderLanguages(container)
   const footer = document.createElement('div')
   footer.className = 'footer'
@@ -183,7 +217,7 @@ export default function initOptionsPage() {
   repoLink.rel = 'noreferrer'
   repoLink.textContent = 'View the GitHub repo'
 
-  hydrateSelection(form, enabledToggle, status)
+  hydrateSelection(form, enabledToggle, strictToggle, status)
   footer.appendChild(divider)
   footer.appendChild(credit)
   footer.appendChild(repoLink)

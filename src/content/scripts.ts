@@ -5,9 +5,13 @@ type LanguageCode = 'ja' | 'zh-TW' | 'off'
 
 type Dictionary = Record<string, string>
 
-type Replacement = {regex: RegExp; replacement: string; marker?: string}
+type Replacement = {
+  regex: RegExp
+  replacement: string | ((substring: string, ...args: unknown[]) => string)
+  marker?: string
+}
 
-type Settings = {language: LanguageCode; enabled: boolean}
+type Settings = {language: LanguageCode; enabled: boolean; strictMatching: boolean}
 
 const SUPPORTED_LANGUAGES: Record<Exclude<LanguageCode, 'off'>, Dictionary> = {
   ja,
@@ -15,7 +19,7 @@ const SUPPORTED_LANGUAGES: Record<Exclude<LanguageCode, 'off'>, Dictionary> = {
 }
 
 const DEFAULT_LANGUAGE: Exclude<LanguageCode, 'off'> = 'ja'
-const DEFAULT_SETTINGS: Settings = {language: DEFAULT_LANGUAGE, enabled: true}
+const DEFAULT_SETTINGS: Settings = {language: DEFAULT_LANGUAGE, enabled: true, strictMatching: true}
 
 const SKIP_TAGS = new Set([
   'SCRIPT',
@@ -34,6 +38,7 @@ let activeReplacements: Replacement[] = []
 let reverseReplacements: Replacement[] = []
 let currentLanguage: Exclude<LanguageCode, 'off'> = DEFAULT_LANGUAGE
 let isEnabled = true
+let strictMatching = true
 let observer: MutationObserver | null = null
 let flushScheduled = false
 const pendingTextNodes = new Set<Text>()
@@ -43,7 +48,15 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
-function buildReplacements(dictionary: Dictionary): Replacement[] {
+function buildReplacements(dictionary: Dictionary, strict: boolean): Replacement[] {
+  if (strict) {
+    return Object.entries(dictionary).map(([source, replacement]) => ({
+      regex: new RegExp(`^(\\s*)${escapeRegExp(source)}(\\s*)$`),
+      replacement: (_match: string, leading: string = '', trailing: string = '') =>
+        `${leading}${replacement}${trailing}`
+    }))
+  }
+
   return Object.entries(dictionary).map(([source, replacement]) => ({
     regex: new RegExp(escapeRegExp(source), 'g'),
     replacement,
@@ -51,7 +64,15 @@ function buildReplacements(dictionary: Dictionary): Replacement[] {
   }))
 }
 
-function buildReverseReplacements(dictionary: Dictionary): Replacement[] {
+function buildReverseReplacements(dictionary: Dictionary, strict: boolean): Replacement[] {
+  if (strict) {
+    return Object.entries(dictionary).map(([source, replacement]) => ({
+      regex: new RegExp(`^(\\s*)${escapeRegExp(replacement)}(\\s*)$`),
+      replacement: (_match: string, leading: string = '', trailing: string = '') =>
+        `${leading}${source}${trailing}`
+    }))
+  }
+
   return Object.entries(dictionary).map(([source, replacement]) => ({
     regex: new RegExp(escapeRegExp(replacement), 'g'),
     replacement: source,
@@ -229,7 +250,11 @@ function getSavedSettings(): Promise<Settings> {
       const language = (result.language as LanguageCode) ?? DEFAULT_LANGUAGE
       const enabled =
         typeof result.enabled === 'boolean' ? result.enabled : DEFAULT_SETTINGS.enabled
-      resolve({language, enabled})
+      const strict =
+        typeof result.strictMatching === 'boolean'
+          ? result.strictMatching
+          : DEFAULT_SETTINGS.strictMatching
+      resolve({language, enabled, strictMatching: strict})
     })
   })
 }
@@ -240,8 +265,9 @@ function applySettings(settings: Settings) {
 
   currentLanguage = language
   isEnabled = settings.enabled && settings.language !== 'off'
-  activeReplacements = buildReplacements(dictionary)
-  reverseReplacements = buildReverseReplacements(dictionary)
+  strictMatching = settings.strictMatching
+  activeReplacements = buildReplacements(dictionary, strictMatching)
+  reverseReplacements = buildReverseReplacements(dictionary, strictMatching)
 
   if (isEnabled) {
     translateWithin(document.body)
@@ -255,13 +281,22 @@ function applySettings(settings: Settings) {
 function listenForSettingsChanges() {
   chrome.storage.onChanged.addListener((changes, areaName) => {
     if (areaName !== 'sync' && areaName !== 'local') return
-    if (!changes.language && typeof changes.enabled === 'undefined') return
+    if (
+      !changes.language &&
+      typeof changes.enabled === 'undefined' &&
+      typeof changes.strictMatching === 'undefined'
+    )
+      return
 
     const language = (changes.language?.newValue as LanguageCode) ?? currentLanguage
     const enabled =
       typeof changes.enabled?.newValue === 'boolean' ? changes.enabled.newValue : isEnabled
+    const strict =
+      typeof changes.strictMatching?.newValue === 'boolean'
+        ? changes.strictMatching.newValue
+        : strictMatching
 
-    applySettings({language, enabled})
+    applySettings({language, enabled, strictMatching: strict})
   })
 }
 
