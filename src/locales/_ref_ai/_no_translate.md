@@ -10,6 +10,7 @@ LLM
 HTML
 CSS
 JS
+SEO
 Head
 Footer
 Agency Workspace

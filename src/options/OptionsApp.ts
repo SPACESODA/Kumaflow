@@ -193,7 +193,7 @@ export default function initOptionsPage() {
   const status = document.createElement('p')
   status.className = 'status'
   status.setAttribute('data-status', 'idle')
-  status.textContent = 'Choose the language you want to see in Webflow. More languages later!'
+  status.textContent = 'Choose the language you want to see in Webflow. More later!'
   container.appendChild(status)
 
   const form = renderLanguages(container)
@@ -201,7 +201,7 @@ export default function initOptionsPage() {
     name: 'strictMatching',
     title: 'Avoid partial translations (Recommended)',
     description:
-      'Only translate when the full text matches the dictionary entry. Prevents partial phrase changes.'
+      'Only translate when the full text matches our translation phrase. Prevents partial phrase changes.'
   })
   const footer = document.createElement('div')
   footer.className = 'footer'
@@ -215,21 +215,22 @@ export default function initOptionsPage() {
   credit.className = 'credit'
   credit.innerHTML = `Made with &hearts; by <a href="https://x.com/anthonycxc" target="_blank" rel="noreferrer">Anthony C.</a>`
 
-  const repoLink = document.createElement('a')
-  repoLink.className = 'repo_link'
-  repoLink.href = 'https://github.com/SPACESODA/Webflow-UI-Localization'
-  repoLink.target = '_blank'
-  repoLink.rel = 'noreferrer'
-  repoLink.textContent = 'Contribute on GitHub'
+  const links = document.createElement('p')
+  links.className = 'links'
+  links.innerHTML = `
+    <a href="https://poeditor.com/join/project/7drFUDh3dh" target="_blank" rel="noreferrer">Join translations</a>
+    ·
+    <a href="https://github.com/SPACESODA/Webflow-UI-Localization" target="_blank" rel="noreferrer">Contribute on GitHub</a>
+  `
 
   meta.appendChild(credit)
-  meta.appendChild(repoLink)
+  meta.appendChild(links)
 
   const unofficialDisclaimer = document.createElement('p')
   unofficialDisclaimer.className = 'disclaimer'
   unofficialDisclaimer.style.marginBottom = '8px'
   unofficialDisclaimer.textContent =
-    'This extension provides unofficial translations that may not be accurate. If you spot an issue or have ideas, please share them on GitHub.'
+    'This extension provides unofficial translations that may not be accurate.'
 
   const disclaimer = document.createElement('p')
   disclaimer.className = 'disclaimer'

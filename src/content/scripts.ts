@@ -26,6 +26,8 @@ const REMOTE_LOCALE_URLS: Partial<Record<Exclude<LanguageCode, 'off'>, string>> 
 
 const DEFAULT_LANGUAGE: Exclude<LanguageCode, 'off'> = 'ja'
 const DEFAULT_SETTINGS: Settings = { language: DEFAULT_LANGUAGE, enabled: true, strictMatching: true }
+const FLEXIBLE_STRICT_WHITESPACE = true
+const initialDocumentLang = document.documentElement?.getAttribute('lang') || 'en'
 
 const SKIP_TAGS = new Set([
   'SCRIPT',
@@ -56,10 +58,22 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
+function normalizeWhitespace(value: string): string {
+  return value.replace(/\s+/g, ' ')
+}
+
+function buildFlexiblePattern(value: string): string {
+  return normalizeWhitespace(value)
+    .split(' ')
+    .map((segment) => escapeRegExp(segment))
+    .join('\\s+')
+}
+
 function buildReplacements(dictionary: Dictionary, strict: boolean): Replacement[] {
   if (strict) {
+    const toPattern = FLEXIBLE_STRICT_WHITESPACE ? buildFlexiblePattern : escapeRegExp
     return Object.entries(dictionary).map(([source, replacement]) => ({
-      regex: new RegExp(`^(\\s*)${escapeRegExp(source)}(\\s*)$`),
+      regex: new RegExp(`^(\\s*)${toPattern(source)}(\\s*)$`),
       replacement: (_match: string, leading: string = '', trailing: string = '') =>
         `${leading}${replacement}${trailing}`
     }))
@@ -74,8 +88,9 @@ function buildReplacements(dictionary: Dictionary, strict: boolean): Replacement
 
 function buildReverseReplacements(dictionary: Dictionary, strict: boolean): Replacement[] {
   if (strict) {
+    const toPattern = FLEXIBLE_STRICT_WHITESPACE ? buildFlexiblePattern : escapeRegExp
     return Object.entries(dictionary).map(([source, replacement]) => ({
-      regex: new RegExp(`^(\\s*)${escapeRegExp(replacement)}(\\s*)$`),
+      regex: new RegExp(`^(\\s*)${toPattern(replacement)}(\\s*)$`),
       replacement: (_match: string, leading: string = '', trailing: string = '') =>
         `${leading}${source}${trailing}`
     }))
@@ -267,6 +282,11 @@ function getSavedSettings(): Promise<Settings> {
   })
 }
 
+function updateDocumentLang(language: LanguageCode, enabled: boolean) {
+  const langToSet = enabled && language !== 'off' ? language : initialDocumentLang
+  document.documentElement?.setAttribute('lang', langToSet)
+}
+
 async function fetchLocale(url: string): Promise<Dictionary> {
   const response = await fetch(url, { cache: 'no-cache' })
   if (!response.ok) {
@@ -315,6 +335,7 @@ function applySettings(settings: Settings) {
   strictMatching = settings.strictMatching
   activeReplacements = buildReplacements(dictionary, strictMatching)
   reverseReplacements = buildReverseReplacements(dictionary, strictMatching)
+  updateDocumentLang(currentLanguage, isEnabled)
 
   if (isEnabled) {
     translateWithin(document.body)

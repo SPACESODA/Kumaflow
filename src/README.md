@@ -1,4 +1,6 @@
-Translations are managed on POEditor, not directly in this repo.  
+# Note
+
+Translations are managed on POEditor, not directly in the repo.  
 
 Contribute here: https://poeditor.com/join/project/7drFUDh3dh
 
