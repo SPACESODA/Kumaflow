@@ -3,7 +3,7 @@
 
 # Webflow UI Localization
 
-> Translate the UI of Webflow Dashboard and Designer into your language.
+> It is a browser extension that allows you to translate the UI of Webflow Dashboard and Designer into your language.
 
 The extension swaps UI strings on these Webflow surfaces:
 
@@ -12,6 +12,8 @@ The extension swaps UI strings on these Webflow surfaces:
 - `https://*.design.webflow.com*`
 
 Open the extension’s Options page (click the extension icon) to choose your language or turn translations off to stay in English. You can also click the toolbar extension icon to toggle translations (badge shows OFF when disabled).
+
+<br />
 
 Made with &hearts; by [Anthony C.](https://x.com/anthonycxc)
 
