@@ -1,0 +1,10 @@
+{
+    "appName": {
+        "message": "Webflow UI Localization",
+        "description": "The name of the extension"
+    },
+    "appDescription": {
+        "message": "Translate the Webflow Dashboard and Designer UI into Japanese or Chinese!",
+        "description": "The description of the extension"
+    }
+}

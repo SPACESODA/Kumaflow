@@ -28,21 +28,22 @@ https://www.jsdelivr.com/package/gh/SPACESODA/Webflow-UI-Localization
 Made with &hearts; by [Anthony C.](https://x.com/anthonycxc)
 
 <br />
+<br />
+
+![Powered by Extension.js][powered-image]
+
+<br />
 
 ---
 
 <br />
 <br />
 
-![Powered by Extension.js][powered-image]
+## Load the extension (unpacked)
 
-## Installation
-
-```bash
-npx extension@latest create <project-name> --template typescript
-cd <project-name>
-npm install
-```
+1) Install deps and build: `npm install && npm run build`
+2) Open `chrome://extensions` (Edge: `edge://extensions`), enable Developer Mode.
+3) Click “Load unpacked” and select the `dist` folder in this repo.
 
 ## Commands
 

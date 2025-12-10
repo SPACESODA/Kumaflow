@@ -1,0 +1,10 @@
+{
+    "appName": {
+        "message": "Webflow UI Localization",
+        "description": "The name of the extension"
+    },
+    "appDescription": {
+        "message": "將 Webflow 控制台和設計器介面翻譯成中文或日語！",
+        "description": "The description of the extension"
+    }
+}

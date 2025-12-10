@@ -1,7 +1,7 @@
-# Note
+# Notes
 
-Translations are managed on POEditor, not directly in the repo.  
+Translations are not managed directly in the repo.  
 
-Contribute here: https://poeditor.com/join/project/7drFUDh3dh
+Contribute on POEditor: https://poeditor.com/join/project/7drFUDh3dh
 
-A GitHub Action pulls updated locale JSONs from POEditor and commits them here automatically.
+A GitHub Action pulls updated locale JSONs from POEditor regularly and commits automatically.
