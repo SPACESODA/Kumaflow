@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/chrome-manifest.json",
   "manifest_version": 3,
-  "version": "0.1.9",
+  "version": "0.2.0",
   "default_locale": "en",
   "name": "__MSG_appName__",
   "description": "__MSG_appDescription__",
@@ -37,6 +37,7 @@
         "https://webflow.com/dashboard*",
         "https://webflow.com/login*",
         "https://webflow.com/signup*",
+        "https://webflow.com/forgot*",
         "https://preview.webflow.com/*",
         "https://*.design.webflow.com/*"
       ],

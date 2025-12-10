@@ -1,9 +1,7 @@
 import ja from '../locales/ja.json'
 import zhTw from '../locales/zh-TW.json'
-
-type LanguageCode = 'ja' | 'zh-TW' | 'off'
-
-type Dictionary = Record<string, string>
+import { injectDashboardFooter } from './injections'
+import type { LanguageCode, Dictionary } from '../types'
 
 type Replacement = {
   regex: RegExp
@@ -219,7 +217,7 @@ function translateTitle() {
 
   const current = document.title
   const { updated, changed } = applyReplacements(current, activeReplacements)
-  
+
   if (changed && updated !== current) {
     document.title = updated
   }
@@ -313,7 +311,10 @@ function flushPending() {
 
   pendingTextNodes.clear()
   pendingElements.clear()
+  injectDashboardFooter(currentLanguage, isEnabled)
 }
+
+
 
 function scheduleFlush() {
   if (flushScheduled) return
@@ -462,6 +463,9 @@ function applySettings(settings: Settings) {
     disconnectObserver()
     disconnectTitleObserver()
   }
+
+  // Update footer regardless of enabled state (to show English when disabled)
+  injectDashboardFooter(currentLanguage, isEnabled)
 
 }
 

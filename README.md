@@ -10,6 +10,7 @@ The extension currently swaps UI strings on the following Webflow surfaces:
 - `https://webflow.com/dashboard*`
 - `https://webflow.com/login*`
 - `https://webflow.com/signup*`
+- `https://webflow.com/forgot*`
 - `https://preview.webflow.com*`
 - `https://*.design.webflow.com*`
 
