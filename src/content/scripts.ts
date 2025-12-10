@@ -199,9 +199,10 @@ function translateTextNode(node: Text) {
 }
 
 function revertTextNode(node: Text) {
-  // If enabled, we don't revert. Revert is only called when disabling or switching languages.
-  // Actually the logic was "if isEnabled return".
-  if (isEnabled) return
+  // We removed the isEnabled check here because applySettings calls this
+  // specifically to clear existing translations *while* isEnabled is still true
+  // (before switching to the new language).
+  // The caller is responsible for deciding when to revert.
 
   const { updated, changed } = applyReplacements(node.data, reverseReplacements)
   if (changed) {
@@ -224,7 +225,7 @@ function translateTitle() {
 }
 
 function revertTitle() {
-  if (isEnabled) return
+  // Removed isEnabled check for same reason as revertTextNode
   const current = document.title
   const { updated, changed } = applyReplacements(current, reverseReplacements)
   if (changed) {
@@ -311,7 +312,9 @@ function flushPending() {
 
   pendingTextNodes.clear()
   pendingElements.clear()
-  injectDashboardFooter(currentLanguage, isEnabled)
+  injectDashboardFooter(currentLanguage, isEnabled, (updates) => {
+    applySettings({ ...latestSettings, ...updates })
+  })
 }
 
 
@@ -434,8 +437,19 @@ async function refreshLocalesFromCdn() {
 }
 
 function applySettings(settings: Settings) {
+  // 1. Revert existing translations if currently enabled
+  if (isEnabled) {
+    disconnectObserver()
+    disconnectTitleObserver()
+    revertWithin(document.body)
+    revertTitle()
+  }
+
+  // 2. Update state
   latestSettings = settings
   const language = settings.language === 'off' ? currentLanguage : settings.language
+
+  // ensure we load dictionary if needed
   const dictionary =
     loadedLanguages[language] ??
     BUNDLED_LANGUAGES[language] ??
@@ -445,25 +459,24 @@ function applySettings(settings: Settings) {
   currentLanguage = language
   isEnabled = settings.enabled && settings.language !== 'off'
   strictMatching = settings.strictMatching
+
   activeReplacements = buildReplacements(dictionary, strictMatching)
   reverseReplacements = buildReverseReplacements(dictionary, strictMatching)
   updateDocumentLang(currentLanguage, isEnabled)
 
+  // 3. Apply new translations if enabled
   if (isEnabled) {
     translateWithin(document.body)
     translateTitle()
     observeDocument()
     observeTitle()
-  } else {
-    revertWithin(document.body)
-    revertTitle()
-    disconnectObserver()
-    disconnectTitleObserver()
   }
 
   // Update footer regardless of enabled state (to show English when disabled)
-  injectDashboardFooter(currentLanguage, isEnabled)
-
+  // We pass a callback to allow the footer dropdown to trigger immediate updates manually
+  injectDashboardFooter(currentLanguage, isEnabled, (updates) => {
+    applySettings({ ...latestSettings, ...updates })
+  })
 }
 
 function listenForSettingsChanges() {
@@ -492,6 +505,18 @@ function listenForSettingsChanges() {
   })
 }
 
+
+function startFooterWatchdog() {
+  // Repeatedly check and inject footer. 
+  // This is cheap (document.querySelector) and ensures the footer appears 
+  // even if the extension is disabled (so no main observer) or if the UI loads late.
+  setInterval(() => {
+    injectDashboardFooter(currentLanguage, isEnabled, (updates) => {
+      applySettings({ ...latestSettings, ...updates })
+    })
+  }, 1000)
+}
+
 function init() {
   if (!document.body) return
   getSavedSettings()
@@ -499,10 +524,12 @@ function init() {
       applySettings(settings)
       listenForSettingsChanges()
       refreshLocalesFromCdn()
+      startFooterWatchdog()
     })
     .catch((err) => {
       console.warn('Failed to load saved settings', err)
       refreshLocalesFromCdn()
+      startFooterWatchdog()
     })
 }
 

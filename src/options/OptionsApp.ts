@@ -101,7 +101,33 @@ function toggleLanguageDisabled(form: HTMLFormElement, disabled: boolean) {
   }
 }
 
-function hydrateSelection(
+function syncUIWithStorage(
+  form: HTMLFormElement,
+  enabledToggle: HTMLInputElement,
+  strictToggle: HTMLInputElement,
+  cdnToggle: HTMLInputElement,
+  status: HTMLElement,
+  settings: Settings
+) {
+  const { language, enabled, strictMatching, useCdn } = settings
+
+  // Update Language Selection
+  const input = form.querySelector<HTMLInputElement>(`input[value="${language}"]`)
+  if (input) {
+    input.checked = true
+  }
+
+  // Update Toggles
+  // We check if the value is different to avoid unnecessary UI flickers/events if possible,
+  // though setting .checked to the same value is safe.
+  if (enabledToggle.checked !== enabled) enabledToggle.checked = enabled
+  if (strictToggle.checked !== strictMatching) strictToggle.checked = strictMatching
+  if (cdnToggle.checked !== useCdn) cdnToggle.checked = useCdn
+
+  toggleLanguageDisabled(form, !enabled)
+}
+
+function initStorageListeners(
   form: HTMLFormElement,
   enabledToggle: HTMLInputElement,
   strictToggle: HTMLInputElement,
@@ -109,6 +135,8 @@ function hydrateSelection(
   status: HTMLElement
 ) {
   const storage = getStorage()
+
+  // 1. Initial Load
   storage.get(DEFAULT_SETTINGS, (result) => {
     const language = (result.language as LanguageCode) ?? DEFAULT_LANGUAGE
     const enabled =
@@ -120,62 +148,89 @@ function hydrateSelection(
     const useCdn =
       typeof result.useCdn === 'boolean' ? result.useCdn : DEFAULT_SETTINGS.useCdn
 
-    const input = form.querySelector<HTMLInputElement>(`input[value="${language}"]`)
-    if (input) {
-      input.checked = true
-    }
-
-    enabledToggle.checked = enabled
-    strictToggle.checked = strictMatching
-    cdnToggle.checked = useCdn
-    toggleLanguageDisabled(form, !enabled)
-
-    enabledToggle.addEventListener('change', (event) => {
-      const target = event.target as HTMLInputElement
-      const nextEnabled = Boolean(target.checked)
-      toggleLanguageDisabled(form, !nextEnabled)
-      storage.set({ enabled: nextEnabled }, () =>
-        setStatus(status, nextEnabled ? 'Translation enabled' : 'Translation turned off')
-      )
+    syncUIWithStorage(form, enabledToggle, strictToggle, cdnToggle, status, {
+      language,
+      enabled,
+      strictMatching,
+      useCdn
     })
+  })
 
-    strictToggle.addEventListener('change', (event) => {
-      const target = event.target as HTMLInputElement
-      const nextStrict = Boolean(target.checked)
-      storage.set({ strictMatching: nextStrict }, () =>
-        setStatus(
-          status,
-          nextStrict
-            ? 'Partial translations avoided'
-            : 'Partial translations allowed (sub-phrases will change)'
-        )
-      )
+  // 2. Storage Change Listener (External updates)
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName !== 'sync' && areaName !== 'local') return
+
+    // We only care about our known keys
+    if (!changes.language && !changes.enabled && !changes.strictMatching && !changes.useCdn) return
+
+    storage.get(DEFAULT_SETTINGS, (result) => {
+      const language = (result.language as LanguageCode) ?? DEFAULT_LANGUAGE
+      const enabled =
+        typeof result.enabled === 'boolean' ? result.enabled : DEFAULT_SETTINGS.enabled
+      const strictMatching =
+        typeof result.strictMatching === 'boolean'
+          ? result.strictMatching
+          : DEFAULT_SETTINGS.strictMatching
+      const useCdn =
+        typeof result.useCdn === 'boolean' ? result.useCdn : DEFAULT_SETTINGS.useCdn
+
+      syncUIWithStorage(form, enabledToggle, strictToggle, cdnToggle, status, {
+        language,
+        enabled,
+        strictMatching,
+        useCdn
+      })
     })
+  })
 
-    cdnToggle.addEventListener('change', (event) => {
-      const target = event.target as HTMLInputElement
-      const nextUseCdn = Boolean(target.checked)
-      storage.set({ useCdn: nextUseCdn }, () =>
-        setStatus(
-          status,
-          nextUseCdn
-            ? 'CDN updates enabled'
-            : 'CDN updates disabled'
-        )
+  // 3. UI Event Listeners (User interactions on THIS page)
+  enabledToggle.addEventListener('change', (event) => {
+    const target = event.target as HTMLInputElement
+    const nextEnabled = Boolean(target.checked)
+    // Optimistic UI update
+    toggleLanguageDisabled(form, !nextEnabled)
+    storage.set({ enabled: nextEnabled }, () =>
+      setStatus(status, nextEnabled ? 'Translation enabled' : 'Translation turned off')
+    )
+  })
+
+  strictToggle.addEventListener('change', (event) => {
+    const target = event.target as HTMLInputElement
+    const nextStrict = Boolean(target.checked)
+    storage.set({ strictMatching: nextStrict }, () =>
+      setStatus(
+        status,
+        nextStrict
+          ? 'Partial translations avoided'
+          : 'Partial translations allowed (sub-phrases will change)'
       )
-    })
+    )
+  })
 
-    form.addEventListener('change', (event) => {
-      const target = event.target as HTMLInputElement
-      if (!target || target.name !== 'language') return
-
-      const nextLanguage = target.value as LanguageCode
-      storage.set({ language: nextLanguage, enabled: true }, () =>
-        setStatus(status, 'Saved')
+  cdnToggle.addEventListener('change', (event) => {
+    const target = event.target as HTMLInputElement
+    const nextUseCdn = Boolean(target.checked)
+    storage.set({ useCdn: nextUseCdn }, () =>
+      setStatus(
+        status,
+        nextUseCdn
+          ? 'CDN updates enabled'
+          : 'CDN updates disabled'
       )
-      enabledToggle.checked = true
-      toggleLanguageDisabled(form, false)
-    })
+    )
+  })
+
+  form.addEventListener('change', (event) => {
+    const target = event.target as HTMLInputElement
+    if (!target || target.name !== 'language') return
+
+    const nextLanguage = target.value as LanguageCode
+    storage.set({ language: nextLanguage, enabled: true }, () =>
+      setStatus(status, 'Saved')
+    )
+    // Force enable visual state if user clicks a language while disabled
+    enabledToggle.checked = true
+    toggleLanguageDisabled(form, false)
   })
 }
 
@@ -261,7 +316,7 @@ export default function initOptionsPage() {
   disclaimer.textContent =
     'This extension is an independent project and is not affiliated with or endorsed by Webflow. Webflow is a trademark of Webflow, Inc.'
 
-  hydrateSelection(form, enabledToggle, strictToggle, cdnToggle, status)
+  initStorageListeners(form, enabledToggle, strictToggle, cdnToggle, status)
   footer.appendChild(divider)
   footer.appendChild(meta)
   footer.appendChild(unofficialDisclaimer)
