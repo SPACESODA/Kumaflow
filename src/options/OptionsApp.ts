@@ -1,9 +1,9 @@
 type LanguageCode = 'ja' | 'zh-TW'
 
-type Settings = { language: LanguageCode; enabled: boolean; strictMatching: boolean }
+type Settings = { language: LanguageCode; enabled: boolean; strictMatching: boolean; useCdn: boolean }
 
 const DEFAULT_LANGUAGE: LanguageCode = 'ja'
-const DEFAULT_SETTINGS: Settings = { language: DEFAULT_LANGUAGE, enabled: true, strictMatching: true }
+const DEFAULT_SETTINGS: Settings = { language: DEFAULT_LANGUAGE, enabled: true, strictMatching: true, useCdn: true }
 
 const languages: Array<{ value: LanguageCode; label: string; nativeLabel: string }> =
   [
@@ -105,6 +105,7 @@ function hydrateSelection(
   form: HTMLFormElement,
   enabledToggle: HTMLInputElement,
   strictToggle: HTMLInputElement,
+  cdnToggle: HTMLInputElement,
   status: HTMLElement
 ) {
   const storage = getStorage()
@@ -116,6 +117,8 @@ function hydrateSelection(
       typeof result.strictMatching === 'boolean'
         ? result.strictMatching
         : DEFAULT_SETTINGS.strictMatching
+    const useCdn =
+      typeof result.useCdn === 'boolean' ? result.useCdn : DEFAULT_SETTINGS.useCdn
 
     const input = form.querySelector<HTMLInputElement>(`input[value="${language}"]`)
     if (input) {
@@ -124,6 +127,7 @@ function hydrateSelection(
 
     enabledToggle.checked = enabled
     strictToggle.checked = strictMatching
+    cdnToggle.checked = useCdn
     toggleLanguageDisabled(form, !enabled)
 
     enabledToggle.addEventListener('change', (event) => {
@@ -144,6 +148,19 @@ function hydrateSelection(
           nextStrict
             ? 'Partial translations avoided'
             : 'Partial translations allowed (sub-phrases will change)'
+        )
+      )
+    })
+
+    cdnToggle.addEventListener('change', (event) => {
+      const target = event.target as HTMLInputElement
+      const nextUseCdn = Boolean(target.checked)
+      storage.set({ useCdn: nextUseCdn }, () =>
+        setStatus(
+          status,
+          nextUseCdn
+            ? 'CDN updates enabled'
+            : 'CDN updates disabled'
         )
       )
     })
@@ -203,6 +220,13 @@ export default function initOptionsPage() {
     description:
       'Only translate when the full text matches our translation phrase. Prevents partial phrase changes.'
   })
+
+  const cdnToggle = renderToggle(container, {
+    name: 'useCdn',
+    title: 'Use the latest translation updates',
+    description:
+      'Fetch the latest community translations from CDN. Turn off to use only the bundled version.'
+  })
   const footer = document.createElement('div')
   footer.className = 'footer'
   const divider = document.createElement('div')
@@ -237,7 +261,7 @@ export default function initOptionsPage() {
   disclaimer.textContent =
     'This extension is an independent project and is not affiliated with or endorsed by Webflow. Webflow is a trademark of Webflow, Inc.'
 
-  hydrateSelection(form, enabledToggle, strictToggle, status)
+  hydrateSelection(form, enabledToggle, strictToggle, cdnToggle, status)
   footer.appendChild(divider)
   footer.appendChild(meta)
   footer.appendChild(unofficialDisclaimer)

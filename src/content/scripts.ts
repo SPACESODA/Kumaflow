@@ -11,7 +11,7 @@ type Replacement = {
   marker?: string
 }
 
-type Settings = { language: LanguageCode; enabled: boolean; strictMatching: boolean }
+type Settings = { language: LanguageCode; enabled: boolean; strictMatching: boolean; useCdn: boolean }
 
 const BUNDLED_LANGUAGES: Record<Exclude<LanguageCode, 'off'>, Dictionary> = {
   ja,
@@ -25,7 +25,7 @@ const REMOTE_LOCALE_URLS: Partial<Record<Exclude<LanguageCode, 'off'>, string>> 
 }
 
 const DEFAULT_LANGUAGE: Exclude<LanguageCode, 'off'> = 'ja'
-const DEFAULT_SETTINGS: Settings = { language: DEFAULT_LANGUAGE, enabled: true, strictMatching: true }
+const DEFAULT_SETTINGS: Settings = { language: DEFAULT_LANGUAGE, enabled: true, strictMatching: true, useCdn: true }
 const FLEXIBLE_STRICT_WHITESPACE = true
 const initialDocumentLang = document.documentElement?.getAttribute('lang') || 'en'
 
@@ -200,7 +200,7 @@ function revertTextNode(node: Text) {
   // If enabled, we don't revert. Revert is only called when disabling or switching languages.
   // Actually the logic was "if isEnabled return".
   if (isEnabled) return
-  
+
   const { updated, changed } = applyReplacements(node.data, reverseReplacements)
   if (changed) {
     node.data = updated
@@ -218,7 +218,7 @@ function translateTitle() {
   // We need to avoid double translation if we observe our own change.
   // Similar to text nodes, we probably want to just apply forward replacements.
   // Use document.title directly.
-  
+
   const current = document.title
   const { updated, changed } = applyReplacements(current, activeReplacements)
   if (changed) {
@@ -245,7 +245,7 @@ function revertTitle() {
 
 function observeTitle() {
   if (titleObserver) titleObserver.disconnect()
-  
+
   const titleEl = document.querySelector('title')
   if (!titleEl) return // Should observe head if title doesn't exist yet? Webflow usually has it.
 
@@ -256,7 +256,7 @@ function observeTitle() {
     // So we need to re-apply translation.
     // To avoid loop: check if translation needed.
     if (isEnabled) {
-       translateTitle()
+      translateTitle()
     }
   })
 
@@ -264,10 +264,10 @@ function observeTitle() {
 }
 
 function disconnectTitleObserver() {
-    if (titleObserver) {
-        titleObserver.disconnect()
-        titleObserver = null
-    }
+  if (titleObserver) {
+    titleObserver.disconnect()
+    titleObserver = null
+  }
 }
 
 
@@ -396,7 +396,9 @@ function getSavedSettings(): Promise<Settings> {
         typeof result.strictMatching === 'boolean'
           ? result.strictMatching
           : DEFAULT_SETTINGS.strictMatching
-      resolve({ language, enabled, strictMatching: strict })
+      const useCdn =
+        typeof result.useCdn === 'boolean' ? result.useCdn : DEFAULT_SETTINGS.useCdn
+      resolve({ language, enabled, strictMatching: strict, useCdn })
     })
   })
 }
@@ -420,6 +422,8 @@ async function fetchLocale(url: string): Promise<Dictionary> {
 }
 
 async function refreshLocalesFromCdn() {
+  if (!latestSettings.useCdn) return
+
   const updates: Partial<Record<Exclude<LanguageCode, 'off'>, Dictionary>> = {}
   const entries = Object.entries(REMOTE_LOCALE_URLS) as [Exclude<LanguageCode, 'off'>, string][]
 
@@ -487,8 +491,12 @@ function listenForSettingsChanges() {
       typeof changes.strictMatching?.newValue === 'boolean'
         ? changes.strictMatching.newValue
         : strictMatching
+    const useCdn =
+      typeof changes.useCdn?.newValue === 'boolean'
+        ? changes.useCdn.newValue
+        : latestSettings.useCdn
 
-    applySettings({ language, enabled, strictMatching: strict })
+    applySettings({ language, enabled, strictMatching: strict, useCdn })
   })
 }
 

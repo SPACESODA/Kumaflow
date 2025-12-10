@@ -16,6 +16,6 @@ You are assisting me with editing the locale JSON files:
 Regarding the locale JSON files:
 
 1. Translate all the missingstrings in the JSON files according to my instructions.
-2. DO NOT change existing translations in the JSON files.
+2. DO NOT change existing translations in the JSON files, instead, take them as reference for translating the missing strings.
 3. Ensure that the JSON files are valid and have good formatting.
 4. Ensure that there are no repeated strings in the JSON files. Perform a final check after updating the JSON files.
