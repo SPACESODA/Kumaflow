@@ -8,6 +8,8 @@
 The extension swaps UI strings on these Webflow surfaces:
 
 - `https://webflow.com/dashboard*`
+- `https://webflow.com/login*`
+- `https://webflow.com/signup*`
 - `https://preview.webflow.com*`
 - `https://*.design.webflow.com*`
 
@@ -30,7 +32,7 @@ Made with &hearts; by [Anthony C.](https://x.com/anthonycxc)
 <br />
 <br />
 
-![Powered by Extension.js][powered-image]
+[![Powered by Extension.js][powered-image]][powered-url]
 
 <br />
 
