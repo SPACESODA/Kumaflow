@@ -33,12 +33,20 @@ export function injectDashboardFooter(
     // If not ready, just return (it will be called when timeout fires)
     if (!isReady) return
 
-    const href = window.location.href
-    const isDesigner = href.includes('preview.webflow.com') || href.includes('.design.webflow.com')
-    const isDashboardOrAuth = href.includes('webflow.com/dashboard') ||
-        href.includes('webflow.com/login') ||
-        href.includes('webflow.com/signup') ||
-        href.includes('webflow.com/forgot')
+    // We use window.location for stricter parsing (Hostname vs Path vs Query)
+    const { hostname, pathname } = window.location
+
+    // Designer: strictly "preview.webflow.com" OR a subdomain of ".design.webflow.com"
+    const isDesigner = hostname === 'preview.webflow.com' || hostname.endsWith('.design.webflow.com')
+
+    // Dashboard/Auth: strictly "webflow.com" domain (with specific paths)
+    const isWebflowCom = hostname === 'webflow.com'
+    const isDashboardOrAuth = isWebflowCom && (
+        pathname.startsWith('/dashboard') ||
+        pathname.startsWith('/login') ||
+        pathname.startsWith('/signup') ||
+        pathname.startsWith('/forgot')
+    )
 
     if (isDesigner) {
         injectDesignerFooter(currentLanguage, isEnabled, onUpdate)
@@ -81,15 +89,7 @@ function injectDesignerFooter(
         footer = document.createElement('div')
         footer.id = footerId
         footer.dataset.type = 'designer'
-        footer.style.cssText = `
-            margin-top: 12px;
-            margin-bottom: 12px;
-            padding: 15px 12px;
-            color: var(--text-sys-subtle, #9e9e9e); 
-            font-size: 10px;
-            line-height: 1.5;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        `
+        footer.className = 'wul-footer wul-footer--designer'
         target.appendChild(footer)
     } else {
         // Move if needed
@@ -103,30 +103,20 @@ function injectDesignerFooter(
     const selectValue = isEnabled ? currentLanguage : 'off'
 
     footer.innerHTML = `
-    <div style="margin-bottom: 8px;">
-        <select id="wul-language-select" style="
-            width: 100%;
-            background: #2b2b2b;
-            color: #ececec;
-            border: 1px solid #3d3d3d;
-            border-radius: 4px;
-            padding: 4px 8px;
-            font-size: 11.5px;
-            outline: none;
-            cursor: pointer;
-        ">
+    <div class="wul-select-wrapper">
+        <select id="wul-language-select" class="wul-select">
             <option value="off">English</option>
             <option value="ja">日本語 (Japanese)</option>
             <option value="zh-TW">繁體中文 (Traditional Chinese)</option>
         </select>
     </div>
-    <div style="margin-bottom: 6px;">${msg}</div>
-    <div style="display: flex; gap: 8px; align-items: center;">
-       <a href="#" id="wul-options" style="color: inherit; text-decoration: none;">${opt}</a>
-       <a href="https://poeditor.com/join/project/7drFUDh3dh" target="_blank" style="color: inherit; text-decoration: none;">${join}</a>
+    <div class="wul-message">${msg}</div>
+    <div class="wul-links">
+       <a href="#" id="wul-options" class="wul-link">${opt}</a>
+       <a href="https://poeditor.com/join/project/7drFUDh3dh" target="_blank" class="wul-link">${join}</a>
     </div>
-    <div style="margin-top: 12px; opacity: 0.6; font-size: 10px;">
-      <a href="https://x.com/anthonycxc" target="_blank" style="color: inherit; text-decoration: none;">${madeByText}</a>
+    <div class="wul-meta">
+      <a href="https://x.com/anthonycxc" target="_blank" class="wul-link">${madeByText}</a>
     </div>
     `
     footer.dataset.lang = currentLanguage
@@ -172,21 +162,7 @@ function injectSimpleFooter(currentLanguage: Exclude<LanguageCode, 'off'>, isEna
         footer = document.createElement('div')
         footer.id = footerId
         footer.dataset.type = 'simple'
-        footer.style.cssText = `
-            max-width: 240px;
-            margin-top: 12px;
-            margin-bottom: 12px;
-            padding: 0 12px;
-            color: var(--text-sys-subtle, #565656); 
-            font-size: 10px;
-            line-height: 1.5;
-            opacity: 0.6;
-            transition: opacity 0.2s ease;
-            position: relative;
-            z-index: 100;
-        `
-        footer.addEventListener('mouseenter', () => { footer!.style.opacity = '1' })
-        footer.addEventListener('mouseleave', () => { footer!.style.opacity = '0.6' })
+        footer.className = 'wul-footer wul-footer--simple'
         target.appendChild(footer)
     } else {
         if (footer.parentElement !== target) target.appendChild(footer)
@@ -196,14 +172,13 @@ function injectSimpleFooter(currentLanguage: Exclude<LanguageCode, 'off'>, isEna
     const { msg, opt, join, madeByText } = getLocalizedStrings(currentLanguage, isEnabled)
 
     footer.innerHTML = `
-    <div style="margin-bottom: 6px;">${msg}</div>
-    <div>
-       <a href="#" id="wul-options" style="color: inherit; text-decoration: none;">${opt}</a>
-       <span style="opacity: 0.8; margin: 0 3px;"> </span>
-       <a href="https://poeditor.com/join/project/7drFUDh3dh" target="_blank" style="color: inherit; text-decoration: none;">${join}</a>
+    <div class="wul-message">${msg}</div>
+    <div class="wul-links">
+       <a href="#" id="wul-options" class="wul-link">${opt}</a>
+       <a href="https://poeditor.com/join/project/7drFUDh3dh" target="_blank" class="wul-link">${join}</a>
     </div>
-    <div style="margin-top: 12px; opacity: 0.8; font-size: 10px;">
-      <a href="https://x.com/anthonycxc" target="_blank" style="color: inherit; text-decoration: none;">${madeByText}</a>
+    <div class="wul-meta">
+      <a href="https://x.com/anthonycxc" target="_blank" class="wul-link">${madeByText}</a>
     </div>
     `
     footer.dataset.lang = currentLanguage
@@ -213,7 +188,7 @@ function injectSimpleFooter(currentLanguage: Exclude<LanguageCode, 'off'>, isEna
 }
 
 function getLocalizedStrings(currentLanguage: Exclude<LanguageCode, 'off'>, isEnabled: boolean) {
-    const defaultMsg = 'Thanks for using the Webflow UI Localization browser extension.'
+    const defaultMsg = 'Click the Webflow UI Localization browser extension icon to enable / disable translations at any time.'
     const defaultOpt = 'Options'
     const defaultJoin = 'Join translations?'
     const madeByText = 'Made with ♥ by Anthony C.'

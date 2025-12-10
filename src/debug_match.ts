@@ -20,7 +20,7 @@ function buildTokenizedReplacement(
     flexible: boolean
 ) {
     const tokenRegex = /\{[^}]+\}/g
-    const sourceTokens: string[] = sourceString.match(tokenRegex) || []
+    // const sourceTokens: string[] = sourceString.match(tokenRegex) || []
     const parts = sourceString.split(tokenRegex)
     const toPattern = flexible ? buildFlexiblePattern : escapeRegExp
     let patternString = '^(\\s*)'

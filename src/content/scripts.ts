@@ -210,7 +210,6 @@ function revertTextNode(node: Text) {
   }
 }
 
-let originalTitle = ''
 let titleObserver: MutationObserver | null = null
 
 function translateTitle() {
