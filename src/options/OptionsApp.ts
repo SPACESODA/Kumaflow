@@ -1,257 +1,128 @@
-type LanguageCode = 'ja' | 'zh-TW'
+import type { LanguageCode, Dictionary } from '../types'
+import extJa from '../locales/extension-ja.json'
+import extZhTw from '../locales/extension-zh-TW.json'
+import extZhCn from '../locales/extension-zh-CN.json'
+import extKo from '../locales/extension-ko.json'
+
+// ---------------------------------------------------------------------------
+// TYPES
+// ---------------------------------------------------------------------------
 
 type Settings = { language: LanguageCode; enabled: boolean; strictMatching: boolean; useCdn: boolean }
+
+// ---------------------------------------------------------------------------
+// CONSTANTS & CONFIGURATION
+// ---------------------------------------------------------------------------
 
 const DEFAULT_LANGUAGE: LanguageCode = 'ja'
 const DEFAULT_SETTINGS: Settings = { language: DEFAULT_LANGUAGE, enabled: true, strictMatching: true, useCdn: true }
 
-const languages: Array<{ value: LanguageCode; label: string; nativeLabel: string }> =
-  [
-    { value: 'ja', label: 'Japanese', nativeLabel: '日本語' },
-    { value: 'zh-TW', label: 'Traditional Chinese', nativeLabel: '繁體中文' }
-  ]
+/**
+ * Supported languages in the Options UI.
+ * Label combines English and Native name for clarity.
+ */
+const LANGUAGES: Array<{ value: LanguageCode; label: string }> = [
+  { value: 'ja', label: 'Japanese 日本語' },
+  { value: 'zh-TW', label: 'Traditional Chinese 繁體中文' },
+  { value: 'zh-CN', label: 'Simplified Chinese 简体中文' },
+  { value: 'ko', label: 'Korean 한국어' }
+]
 
+/**
+ * Map of language codes to their respective extension-specific locale JSONs.
+ * Used to translate the Options page UI itself.
+ */
+const EXTENSION_LOCALES: Record<Exclude<LanguageCode, 'off'>, Dictionary> = {
+  ja: extJa,
+  'zh-TW': extZhTw,
+  'zh-CN': extZhCn,
+  ko: extKo
+}
+
+/**
+ * Fallback English strings.
+ * Used when the selected language's translation is missing or language is 'off'.
+ */
+const FALLBACK_STRINGS: Dictionary = {
+  options_title: 'Choose your Webflow UI language',
+  options_description: 'This extension translates the UI of Webflow Dashboard and Designer. The goal is to make Webflow easier to use without distorting its terminology. It may not translate every term.',
+  options_enable_label: 'Enable translation',
+  options_enable_desc: 'Turn this off to keep Webflow in English.',
+  options_status_idle: 'Choose the language you want to see in Webflow. More languages coming soon!',
+  options_strict_label: 'Avoid partial translations (Recommended)',
+  options_strict_desc: 'Only translate when the full text matches our translation phrase. Prevents partial phrase changes.',
+  options_cdn_label: 'Use the latest translation updates',
+  options_cdn_desc: 'Fetch the latest community translations from CDN. Turn off to use only the bundled version.',
+  options_contribute: 'Contribute on GitHub',
+  footer_join: 'Join translations'
+}
+
+// ---------------------------------------------------------------------------
+// HELPERS
+// ---------------------------------------------------------------------------
+
+/**
+ * Safely retrieve the storage area (Sync if available, otherwise Local).
+ */
 function getStorage(): chrome.storage.SyncStorageArea | chrome.storage.LocalStorageArea {
-  if (chrome?.storage?.sync) return chrome.storage.sync
-  return chrome.storage.local
+  return chrome?.storage?.sync || chrome.storage.local
 }
 
-function renderToggle(
-  root: HTMLElement,
-  options: { name?: string; title?: string; description?: string } = {}
-) {
-  const toggle = document.createElement('label')
-  toggle.className = 'toggle'
-
-  const checkbox = document.createElement('input')
-  checkbox.type = 'checkbox'
-  checkbox.name = options.name ?? 'enabled'
-
-  const track = document.createElement('span')
-  track.className = 'toggle_track'
-
-  const thumb = document.createElement('span')
-  thumb.className = 'toggle_thumb'
-
-  const text = document.createElement('div')
-  text.className = 'toggle_text'
-  text.innerHTML = `<strong>${options.title ?? 'Enable translation'}</strong><span>${options.description ?? 'Turn this off to keep Webflow in English.'
-    }</span>`
-
-  track.appendChild(thumb)
-  toggle.appendChild(checkbox)
-  toggle.appendChild(track)
-  toggle.appendChild(text)
-
-  root.appendChild(toggle)
-
-  return checkbox
+/**
+ * Get a localized string for the Options UI.
+ * Falls back to English if the translation is missing.
+ */
+function getText(lang: LanguageCode, key: string): string {
+  if (lang === 'off') return FALLBACK_STRINGS[key] || ''
+  const dict = EXTENSION_LOCALES[lang as Exclude<LanguageCode, 'off'>]
+  return dict?.[key] || FALLBACK_STRINGS[key] || ''
 }
 
-function renderLanguages(root: HTMLElement) {
-  const form = document.createElement('form')
-  form.id = 'language-form'
+// ---------------------------------------------------------------------------
+// STATE MANAGEMENT
+// ---------------------------------------------------------------------------
 
-  languages.forEach((language) => {
-    const wrapper = document.createElement('label')
-    wrapper.className = 'language_option'
+// Tracks the last rendered language to determine if a full re-render is needed.
+let lastRenderedLanguage: LanguageCode | null = null
+// Holds the current application state.
+let currentSettings: Settings = { ...DEFAULT_SETTINGS }
 
-    const radio = document.createElement('input')
-    radio.type = 'radio'
-    radio.name = 'language'
-    radio.value = language.value
+// ---------------------------------------------------------------------------
+// DOM RENDERING
+// ---------------------------------------------------------------------------
 
-    const name = document.createElement('span')
-    name.className = 'language_name'
-    name.textContent = language.label
-
-    const nativeName = document.createElement('span')
-    nativeName.className = 'language_native'
-    nativeName.textContent = language.nativeLabel
-
-    wrapper.appendChild(radio)
-    wrapper.appendChild(name)
-    wrapper.appendChild(nativeName)
-    form.appendChild(wrapper)
-  })
-
-  root.appendChild(form)
-
-  return form
-}
-
-function setStatus(element: HTMLElement, message: string) {
-  element.textContent = message
-  element.dataset.status = 'changed'
-  setTimeout(() => {
-    element.textContent = 'Choose the language you want to see in Webflow. More languages coming soon!'
-    element.dataset.status = 'idle'
-  }, 2000)
-}
-
-function toggleLanguageDisabled(form: HTMLFormElement, disabled: boolean) {
-  const inputs = form.querySelectorAll<HTMLInputElement>('input[type="radio"]')
-  inputs.forEach((input) => {
-    input.disabled = disabled
-  })
-  if (disabled) {
-    form.setAttribute('data-disabled', 'true')
-  } else {
-    form.removeAttribute('data-disabled')
-  }
-}
-
-function syncUIWithStorage(
-  form: HTMLFormElement,
-  enabledToggle: HTMLInputElement,
-  strictToggle: HTMLInputElement,
-  cdnToggle: HTMLInputElement,
-  status: HTMLElement,
-  settings: Settings
-) {
-  const { language, enabled, strictMatching, useCdn } = settings
-
-  // Update Language Selection
-  const input = form.querySelector<HTMLInputElement>(`input[value="${language}"]`)
-  if (input) {
-    input.checked = true
-  }
-
-  // Update Toggles
-  // We check if the value is different to avoid unnecessary UI flickers/events if possible,
-  // though setting .checked to the same value is safe.
-  if (enabledToggle.checked !== enabled) enabledToggle.checked = enabled
-  if (strictToggle.checked !== strictMatching) strictToggle.checked = strictMatching
-  if (cdnToggle.checked !== useCdn) cdnToggle.checked = useCdn
-
-  toggleLanguageDisabled(form, !enabled)
-}
-
-function initStorageListeners(
-  form: HTMLFormElement,
-  enabledToggle: HTMLInputElement,
-  strictToggle: HTMLInputElement,
-  cdnToggle: HTMLInputElement,
-  status: HTMLElement
-) {
-  const storage = getStorage()
-
-  // 1. Initial Load
-  storage.get(DEFAULT_SETTINGS, (result) => {
-    const language = (result.language as LanguageCode) ?? DEFAULT_LANGUAGE
-    const enabled =
-      typeof result.enabled === 'boolean' ? result.enabled : DEFAULT_SETTINGS.enabled
-    const strictMatching =
-      typeof result.strictMatching === 'boolean'
-        ? result.strictMatching
-        : DEFAULT_SETTINGS.strictMatching
-    const useCdn =
-      typeof result.useCdn === 'boolean' ? result.useCdn : DEFAULT_SETTINGS.useCdn
-
-    syncUIWithStorage(form, enabledToggle, strictToggle, cdnToggle, status, {
-      language,
-      enabled,
-      strictMatching,
-      useCdn
-    })
-  })
-
-  // 2. Storage Change Listener (External updates)
-  chrome.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName !== 'sync' && areaName !== 'local') return
-
-    // We only care about our known keys
-    if (!changes.language && !changes.enabled && !changes.strictMatching && !changes.useCdn) return
-
-    storage.get(DEFAULT_SETTINGS, (result) => {
-      const language = (result.language as LanguageCode) ?? DEFAULT_LANGUAGE
-      const enabled =
-        typeof result.enabled === 'boolean' ? result.enabled : DEFAULT_SETTINGS.enabled
-      const strictMatching =
-        typeof result.strictMatching === 'boolean'
-          ? result.strictMatching
-          : DEFAULT_SETTINGS.strictMatching
-      const useCdn =
-        typeof result.useCdn === 'boolean' ? result.useCdn : DEFAULT_SETTINGS.useCdn
-
-      syncUIWithStorage(form, enabledToggle, strictToggle, cdnToggle, status, {
-        language,
-        enabled,
-        strictMatching,
-        useCdn
-      })
-    })
-  })
-
-  // 3. UI Event Listeners (User interactions on THIS page)
-  enabledToggle.addEventListener('change', (event) => {
-    const target = event.target as HTMLInputElement
-    const nextEnabled = Boolean(target.checked)
-    // Optimistic UI update
-    toggleLanguageDisabled(form, !nextEnabled)
-    storage.set({ enabled: nextEnabled }, () =>
-      setStatus(status, nextEnabled ? 'Translation enabled' : 'Translation turned off')
-    )
-  })
-
-  strictToggle.addEventListener('change', (event) => {
-    const target = event.target as HTMLInputElement
-    const nextStrict = Boolean(target.checked)
-    storage.set({ strictMatching: nextStrict }, () =>
-      setStatus(
-        status,
-        nextStrict
-          ? 'Partial translations avoided'
-          : 'Partial translations allowed (sub-phrases will change)'
-      )
-    )
-  })
-
-  cdnToggle.addEventListener('change', (event) => {
-    const target = event.target as HTMLInputElement
-    const nextUseCdn = Boolean(target.checked)
-    storage.set({ useCdn: nextUseCdn }, () =>
-      setStatus(
-        status,
-        nextUseCdn
-          ? 'CDN updates enabled'
-          : 'CDN updates disabled'
-      )
-    )
-  })
-
-  form.addEventListener('change', (event) => {
-    const target = event.target as HTMLInputElement
-    if (!target || target.name !== 'language') return
-
-    const nextLanguage = target.value as LanguageCode
-    storage.set({ language: nextLanguage, enabled: true }, () =>
-      setStatus(status, 'Saved')
-    )
-    // Force enable visual state if user clicks a language while disabled
-    enabledToggle.checked = true
-    toggleLanguageDisabled(form, false)
-  })
-}
-
-export default function initOptionsPage() {
+/**
+ * Main render function.
+ * Decides whether to do a full page re-render (language change) or just update input values.
+ */
+function renderApp(settings: Settings) {
+  currentSettings = settings
   const root = document.getElementById('root')
   if (!root) return
+
+  // Full re-render needed if language changed (to update UI text)
+  if (lastRenderedLanguage !== settings.language) {
+    lastRenderedLanguage = settings.language
+    renderFullPage(root, settings)
+    bindEvents(root) // Re-bind events after DOM changes
+  }
+
+  // Always update input states (checked/disabled) to match settings
+  updateValues(root, settings)
+}
+
+/**
+ * Renders the entire HTML structure of the page, localized to `settings.language`.
+ */
+function renderFullPage(root: HTMLElement, settings: Settings) {
+  const lang = settings.language
 
   root.innerHTML = `
     <div class="options_shell">
       <div>
         <p class="eyebrow">Webflow UI Localization</p>
-        <h1 class="title">Choose your Webflow UI language</h1>
-        <p class="lede">
-          This extension translates the UI of Webflow&rsquo;s Dashboard and Designer. The goal is to make Webflow easier to use without distorting its terminology. It may not translate every term.
-        </p>
-        <p class="lede translation">
-          この拡張機能は Webflow の ダッシュボード と Designer の UI を翻訳します。用語を歪めないようにするため、すべての文言は訳されない場合があります。
-        </p>
-        <p class="lede translation">
-          此擴充功能會翻譯 Webflow 的 Dashboard 與 Designer 介面。為了避免混淆 Webflow 的術語，可能不會翻譯所有文字。
-        </p>
+        <h1 class="title">${getText(lang, 'options_title')}</h1>
+        <p class="lede">${getText(lang, 'options_description')}</p>
       </div>
     </div>
   `
@@ -260,75 +131,198 @@ export default function initOptionsPage() {
   container.className = 'options_card'
   root.querySelector('.options_shell')?.appendChild(container)
 
-  const enabledToggle = renderToggle(container)
+  // 1. Enable Toggle
+  renderToggleItem(container, 'enabled', getText(lang, 'options_enable_label'), getText(lang, 'options_enable_desc'))
 
+  // Status Message
   const status = document.createElement('p')
   status.className = 'status'
-  status.setAttribute('data-status', 'idle')
-  status.textContent = 'Choose the language you want to see in Webflow. More later!'
+  status.id = 'status_msg'
+  status.textContent = getText(lang, 'options_status_idle')
   container.appendChild(status)
 
-  const form = renderLanguages(container)
-  const strictToggle = renderToggle(container, {
-    name: 'strictMatching',
-    title: 'Avoid partial translations (Recommended)',
-    description:
-      'Only translate when the full text matches our translation phrase. Prevents partial phrase changes.'
-  })
+  // 2. Language Radio List
+  renderLanguageList(container)
 
-  const cdnToggle = renderToggle(container, {
-    name: 'useCdn',
-    title: 'Use the latest translation updates',
-    description:
-      'Fetch the latest community translations from CDN. Turn off to use only the bundled version.'
-  })
+  // 3. Other Toggles
+  renderToggleItem(container, 'strictMatching', getText(lang, 'options_strict_label'), getText(lang, 'options_strict_desc'))
+  renderToggleItem(container, 'useCdn', getText(lang, 'options_cdn_label'), getText(lang, 'options_cdn_desc'))
+
+  // Footer
   const footer = document.createElement('div')
   footer.className = 'footer'
-  const divider = document.createElement('div')
-  divider.className = 'footer_divider'
 
-  const meta = document.createElement('div')
-  meta.className = 'footer_meta'
-
-  const credit = document.createElement('p')
-  credit.className = 'credit'
-  credit.innerHTML = `Made with &hearts; by <a href="https://x.com/anthonycxc" target="_blank" rel="noreferrer">Anthony C.</a>`
-
-  const links = document.createElement('p')
-  links.className = 'links'
-  links.innerHTML = `
-    <a href="https://poeditor.com/join/project/7drFUDh3dh" target="_blank" rel="noreferrer">Join translations</a>
-    ·
-    <a href="https://github.com/SPACESODA/Webflow-UI-Localization" target="_blank" rel="noreferrer">Contribute on GitHub</a>
+  footer.innerHTML = `
+    <div class="footer_divider"></div>
+    <div class="footer_meta">
+        <p class="credit">Made with &hearts; by <a href="https://x.com/anthonycxc" target="_blank" rel="noreferrer">Anthony C.</a></p>
+        <p class="links">
+            <a href="https://poeditor.com/join/project/7drFUDh3dh" target="_blank" rel="noreferrer">${getText(lang, 'footer_join')}</a>
+            ·
+            <a href="https://github.com/SPACESODA/Webflow-UI-Localization" target="_blank" rel="noreferrer">${getText(lang, 'options_contribute')}</a>
+        </p>
+    </div>
+    <p class="disclaimer" style="margin-bottom: 8px;">This extension provides unofficial translations that may not be accurate.</p>
+    <p class="disclaimer">This extension is an independent project and is not affiliated with or endorsed by Webflow. Webflow is a trademark of Webflow, Inc.</p>
+    <p class="disclaimer">This extension does not collect, store, or transmit any personal information or usage data.</p>
   `
-
-  meta.appendChild(credit)
-  meta.appendChild(links)
-
-  const unofficialDisclaimer = document.createElement('p')
-  unofficialDisclaimer.className = 'disclaimer'
-  unofficialDisclaimer.style.marginBottom = '8px'
-  unofficialDisclaimer.textContent =
-    'This extension provides unofficial translations that may not be accurate.'
-
-  const disclaimer = document.createElement('p')
-  disclaimer.className = 'disclaimer'
-  disclaimer.textContent =
-    'This extension is an independent project and is not affiliated with or endorsed by Webflow. Webflow is a trademark of Webflow, Inc.'
-
-  initStorageListeners(form, enabledToggle, strictToggle, cdnToggle, status)
-  footer.appendChild(divider)
-  footer.appendChild(meta)
-  footer.appendChild(unofficialDisclaimer)
-  footer.appendChild(disclaimer)
-
-  const privacyDisclaimer = document.createElement('p')
-  privacyDisclaimer.className = 'disclaimer'
-  privacyDisclaimer.textContent =
-    'This extension does not collect, store, or transmit any personal information or usage data.'
-  footer.appendChild(privacyDisclaimer)
-
   container.appendChild(footer)
 }
 
-initOptionsPage()
+/**
+ * Helper to render a checkbox toggle row.
+ */
+function renderToggleItem(parent: HTMLElement, name: string, title: string, desc: string) {
+  const label = document.createElement('label')
+  label.className = 'toggle'
+  label.innerHTML = `
+    <input type="checkbox" name="${name}">
+    <span class="toggle_track"><span class="toggle_thumb"></span></span>
+    <div class="toggle_text"><strong>${title}</strong><span>${desc}</span></div>
+  `
+  parent.appendChild(label)
+}
+
+/**
+ * Helper to render the list of language radio buttons.
+ */
+function renderLanguageList(parent: HTMLElement) {
+  const form = document.createElement('form')
+  form.id = 'language-form'
+
+  LANGUAGES.forEach((item) => {
+    const label = document.createElement('label')
+    label.className = 'language_option'
+    label.innerHTML = `
+        <input type="radio" name="language" value="${item.value}">
+        <span class="language_name">${item.label}</span>
+    `
+    form.appendChild(label)
+  })
+  parent.appendChild(form)
+}
+
+/**
+ * Updates DOM elements (checkboxes, radios) to match the current settings object.
+ * Does not re-create DOM elements, only updates properties.
+ */
+function updateValues(root: HTMLElement, settings: Settings) {
+  // Update Toggles
+  const toggles = root.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')
+  toggles.forEach(box => {
+    const key = box.name as keyof Settings
+    if (key in settings) {
+      box.checked = Boolean(settings[key])
+    }
+  })
+
+  // Update Selected Language
+  const langRadio = root.querySelector<HTMLInputElement>(`input[name="language"][value="${settings.language}"]`)
+  if (langRadio) langRadio.checked = true
+
+  // Handle Disabled State (when extension is disabled)
+  const form = root.querySelector('#language-form')
+  if (form) {
+    if (settings.enabled) form.removeAttribute('data-disabled')
+    else form.setAttribute('data-disabled', 'true')
+
+    const radios = form.querySelectorAll<HTMLInputElement>('input[type="radio"]')
+    radios.forEach(r => r.disabled = !settings.enabled)
+  }
+}
+
+// ---------------------------------------------------------------------------
+// EVENTS & INTERACTION
+// ---------------------------------------------------------------------------
+
+function bindEvents(root: HTMLElement) {
+  const storage = getStorage()
+
+  // 1. Checkbox Handlers (Enable, Strict, CDN)
+  const toggles = root.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')
+  toggles.forEach(box => {
+    box.addEventListener('change', (e) => {
+      const target = e.target as HTMLInputElement
+      const key = target.name
+      const val = target.checked
+
+      // Optimistic UI update for 'enabled' toggle
+      if (key === 'enabled') {
+        updateValues(root, { ...currentSettings, enabled: val })
+      }
+
+      // Save to storage
+      storage.set({ [key]: val }, () => {
+        setStatusMsg(root, 'Saved')
+      })
+    })
+  })
+
+  // 2. Language Selection Handler
+  const form = root.querySelector('#language-form')
+  form?.addEventListener('change', (e) => {
+    const target = e.target as HTMLInputElement
+    if (target.name === 'language') {
+      const val = target.value as LanguageCode
+
+      // Saving language triggers 'onChanged', which will call renderApp() and re-render the page.
+      storage.set({ language: val, enabled: true }, () => {
+        setStatusMsg(root, 'Saved')
+      })
+
+      // Updates internal state loosely until the re-render happens
+      currentSettings.language = val
+      currentSettings.enabled = true
+    }
+  })
+}
+
+function setStatusMsg(root: HTMLElement, msg: string) {
+  const el = root.querySelector('#status_msg') as HTMLElement
+  if (el) {
+    el.textContent = msg
+    el.dataset.status = 'changed'
+    setTimeout(() => {
+      // Revert to idle message if still in 'changed' state
+      if (el.dataset.status === 'changed') {
+        el.textContent = getText(currentSettings.language, 'options_status_idle')
+        el.dataset.status = 'idle'
+      }
+    }, 2000)
+  }
+}
+
+// ---------------------------------------------------------------------------
+// INITIALIZATION
+// ---------------------------------------------------------------------------
+
+export default function initOptionsPage() {
+  const storage = getStorage()
+
+  // 1. Initial Load: Get settings from storage and render
+  storage.get(DEFAULT_SETTINGS, (items) => {
+    const settings = { ...DEFAULT_SETTINGS, ...items }
+    renderApp(settings)
+  })
+
+  // 2. Storage Listener: Handle updates from other tabs/contexts
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== 'sync' && area !== 'local') return
+
+    const newSettings = { ...currentSettings }
+    let hasChange = false
+
+      // Update settings object with any changed values
+      ; (Object.keys(DEFAULT_SETTINGS) as Array<keyof Settings>).forEach(key => {
+        if (changes[key]) {
+          // @ts-ignore
+          newSettings[key] = changes[key].newValue
+          hasChange = true
+        }
+      })
+
+    if (hasChange) {
+      renderApp(newSettings)
+    }
+  })
+}

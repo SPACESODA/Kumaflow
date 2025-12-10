@@ -4,7 +4,7 @@
         "description": "The name of the extension"
     },
     "appDescription": {
-        "message": "Translate the Webflow Dashboard and Designer UI into Japanese or Chinese!",
+        "message": "Translate the Webflow Dashboard and Designer UI into Japanese, Chinese, Korean, and more!",
         "description": "The description of the extension"
     }
 }

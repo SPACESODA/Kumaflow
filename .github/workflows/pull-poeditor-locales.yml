@@ -59,6 +59,8 @@ jobs:
           urls=(
             "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${GITHUB_REF_NAME}/src/locales/ja.json"
             "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${GITHUB_REF_NAME}/src/locales/zh-TW.json"
+            "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${GITHUB_REF_NAME}/src/locales/zh-CN.json"
+            "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${GITHUB_REF_NAME}/src/locales/ko.json"
           )
           for url in "${urls[@]}"; do
             echo "Purging $url"

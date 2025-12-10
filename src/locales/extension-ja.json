@@ -1,5 +1,15 @@
 {
     "footer_message": "Webflow UI Localization 拡張機能をご利用いただきありがとうございます。アイコンをクリックして、いつでもオン／オフを切り替えられます。",
     "footer_options": "設定",
-    "footer_join": "翻訳に参加する"
+    "footer_join": "翻訳に参加する",
+    "options_title": "Webflow UI 言語を選択",
+    "options_description": "この拡張機能は Webflow の Dashboard と Designer の UI を翻訳します。用語を歪めないようにするため、すべての文言は訳されない場合があります。",
+    "options_enable_label": "翻訳を有効にする",
+    "options_enable_desc": "これをオフにすると、Webflow は英語のままになります。",
+    "options_status_idle": "Webflow で表示したい言語を選択してください。対応言語は順次追加予定です！",
+    "options_strict_label": "部分的な翻訳を避ける (推奨)",
+    "options_strict_desc": "翻訳フレーズと完全に一致する場合のみ翻訳します。部分的なフレーズの変更を防ぎます。",
+    "options_cdn_label": "最新の翻訳を使用",
+    "options_cdn_desc": "CDN から最新のコミュニティ翻訳を取得します。オフにすると同梱版のみを使用します。",
+    "options_contribute": "GitHub で貢献する"
 }

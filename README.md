@@ -3,7 +3,7 @@
 
 # Webflow UI Localization
 
-> An open-source browser extension that allows you to translate the UI of Webflow Dashboard and Designer into your language.
+> An open-source browser extension that allows you to translate the UI of Webflow Dashboard and Designer into your language!
 
 The extension currently swaps UI strings on the following Webflow surfaces.
 

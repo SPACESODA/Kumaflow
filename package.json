@@ -1,14 +1,13 @@
 {
   "private": true,
   "name": "webflow-ui-localization",
-  "description": "Translate the Webflow dashboard UI into Japanese or Traditional Chinese.",
-  "version": "0.2.3",
+  "description": "Translate the Webflow Dashboard and Designer UI into Japanese, Chinese, Korean, and more!",
+  "version": "0.2.4",
   "license": "MIT",
   "type": "module",
   "author": {
-    "name": "Your Name",
-    "email": "your@email.com",
-    "url": "https://yourwebsite.com"
+    "name": "Anthony C. <https://x.com/anthonycxc>",
+    "url": "https://x.com/anthonycxc"
   },
   "devDependencies": {
     "typescript": "5.3.3",

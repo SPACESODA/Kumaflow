@@ -4,7 +4,7 @@
         "description": "The name of the extension"
     },
     "appDescription": {
-        "message": "把 Webflow Dashboard 和 Designer 的 UI 翻譯成中文或日語！",
+        "message": "把 Webflow Dashboard 和 Designer 的 UI 翻譯成中文、日語、韓語或其他語言！",
         "description": "The description of the extension"
     }
 }

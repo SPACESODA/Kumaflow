@@ -1,10 +1,14 @@
 import type { LanguageCode, Dictionary } from '../types'
 import extJa from '../locales/extension-ja.json'
 import extZhTw from '../locales/extension-zh-TW.json'
+import extZhCn from '../locales/extension-zh-CN.json'
+import extKo from '../locales/extension-ko.json'
 
 const EXTENSION_LOCALES: Record<Exclude<LanguageCode, 'off'>, Dictionary> = {
     ja: extJa,
-    'zh-TW': extZhTw
+    'zh-TW': extZhTw,
+    'zh-CN': extZhCn,
+    ko: extKo
 }
 
 type SettingsUpdate = { language?: LanguageCode; enabled?: boolean }
@@ -92,7 +96,8 @@ function injectDesignerFooter(
         footer.className = 'wul-footer wul-footer--designer'
         target.appendChild(footer)
     } else {
-        // Move if needed
+        // Ensure footer is always at the bottom.
+        // If Webflow's UI added new elements (like a popped-up menu), we move our footer to the end to maintain order.
         if (footer.parentElement !== target) target.appendChild(footer)
         else if (target.lastElementChild !== footer) target.appendChild(footer)
     }
@@ -108,6 +113,8 @@ function injectDesignerFooter(
             <option value="off">English</option>
             <option value="ja">日本語 (Japanese)</option>
             <option value="zh-TW">繁體中文 (Traditional Chinese)</option>
+            <option value="zh-CN">简体中文 (Simplified Chinese)</option>
+            <option value="ko">한국어 (Korean)</option>
         </select>
     </div>
     <div class="wul-message">${msg}</div>
@@ -165,6 +172,7 @@ function injectSimpleFooter(currentLanguage: Exclude<LanguageCode, 'off'>, isEna
         footer.className = 'wul-footer wul-footer--simple'
         target.appendChild(footer)
     } else {
+        // Move if needed
         if (footer.parentElement !== target) target.appendChild(footer)
         else if (target.lastElementChild !== footer) target.appendChild(footer)
     }

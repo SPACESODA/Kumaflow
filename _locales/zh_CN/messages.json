@@ -4,7 +4,7 @@
         "description": "The name of the extension"
     },
     "appDescription": {
-        "message": "Webflow の Dashboard と Designer の UI を、日本語・中国語・韓国語などの多言語に対応させる拡張機能です。",
+        "message": "将 Webflow Dashboard 和 Designer 的 UI 翻译成中文、日语、韩语以及更多语言！",
         "description": "The description of the extension"
     }
 }

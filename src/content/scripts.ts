@@ -1,5 +1,7 @@
 import ja from '../locales/ja.json'
 import zhTw from '../locales/zh-TW.json'
+import zhCn from '../locales/zh-CN.json'
+import ko from '../locales/ko.json'
 import { injectDashboardFooter } from './injections'
 import type { LanguageCode, Dictionary } from '../types'
 
@@ -13,13 +15,16 @@ type Settings = { language: LanguageCode; enabled: boolean; strictMatching: bool
 
 const BUNDLED_LANGUAGES: Record<Exclude<LanguageCode, 'off'>, Dictionary> = {
   ja,
-  'zh-TW': zhTw
+  'zh-TW': zhTw,
+  'zh-CN': zhCn,
+  ko
 }
 
 const REMOTE_LOCALE_URLS: Partial<Record<Exclude<LanguageCode, 'off'>, string>> = {
   ja: 'https://cdn.jsdelivr.net/gh/SPACESODA/Webflow-UI-Localization@latest/src/locales/ja.json',
-  'zh-TW':
-    'https://cdn.jsdelivr.net/gh/SPACESODA/Webflow-UI-Localization@latest/src/locales/zh-TW.json'
+  'zh-TW': 'https://cdn.jsdelivr.net/gh/SPACESODA/Webflow-UI-Localization@latest/src/locales/zh-TW.json',
+  'zh-CN': 'https://cdn.jsdelivr.net/gh/SPACESODA/Webflow-UI-Localization@latest/src/locales/zh-CN.json',
+  ko: 'https://cdn.jsdelivr.net/gh/SPACESODA/Webflow-UI-Localization@latest/src/locales/ko.json'
 }
 
 const DEFAULT_LANGUAGE: Exclude<LanguageCode, 'off'> = 'ja'
