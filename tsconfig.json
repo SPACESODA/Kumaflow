@@ -6,8 +6,12 @@
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "moduleResolution": "node",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "moduleResolution": "bundler",
     "module": "esnext",
     "noEmit": true,
     "resolveJsonModule": true,
@@ -17,6 +21,13 @@
     "useDefineForClassFields": true,
     "skipLibCheck": true
   },
-  "include": ["./", "extension-env.d.ts", "browser-global.d.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "./",
+    "extension-env.d.ts",
+    "browser-global.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

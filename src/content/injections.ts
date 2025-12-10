@@ -4,6 +4,9 @@ import extZhTw from '../locales-extension/zh-TW.json'
 import extZhCn from '../locales-extension/zh-CN.json'
 import extKo from '../locales-extension/ko.json'
 
+const RETRY_INTERVAL_MS = 800
+const MAX_RETRIES = 10
+
 const EXTENSION_LOCALES: Record<Exclude<LanguageCode, 'off'>, Dictionary> = {
     ja: extJa,
     'zh-TW': extZhTw,
@@ -13,18 +16,38 @@ const EXTENSION_LOCALES: Record<Exclude<LanguageCode, 'off'>, Dictionary> = {
 
 type SettingsUpdate = { language?: LanguageCode; enabled?: boolean }
 
-// State for delay
+// State for initial delayed render
 let isReady = false
 let pendingArgs: { currentLanguage: Exclude<LanguageCode, 'off'>, isEnabled: boolean, onUpdate?: (settings: SettingsUpdate) => void } | null = null
+let lastPathname = window.location.pathname
 
-// Initialize 2s delay
+// Initial 2s delay to avoid racing Webflow's UI render
 setTimeout(() => {
     isReady = true
     if (pendingArgs) {
         injectDashboardFooter(pendingArgs.currentLanguage, pendingArgs.isEnabled, pendingArgs.onUpdate)
-        pendingArgs = null
     }
 }, 2000)
+
+// Lightweight SPA/path change watcher to re-inject when Webflow navigates without a full reload
+setInterval(() => {
+    const { pathname } = window.location
+    if (pathname !== lastPathname) {
+        lastPathname = pathname
+        if (pendingArgs && isReady) {
+            injectDashboardFooter(pendingArgs.currentLanguage, pendingArgs.isEnabled, pendingArgs.onUpdate)
+        }
+    }
+}, 1000)
+
+// Periodic health check to re-add the footer if Webflow re-renders the nav/pane
+setInterval(() => {
+    if (!isReady || !pendingArgs) return
+    const footer = document.getElementById('webflow-ui-localization-footer')
+    if (!footer) {
+        injectDashboardFooter(pendingArgs.currentLanguage, pendingArgs.isEnabled, pendingArgs.onUpdate)
+    }
+}, 5000)
 
 export function injectDashboardFooter(
     currentLanguage: Exclude<LanguageCode, 'off'>,
@@ -37,13 +60,13 @@ export function injectDashboardFooter(
     // If not ready, just return (it will be called when timeout fires)
     if (!isReady) return
 
-    // We use window.location for stricter parsing (Hostname vs Path vs Query)
+    // Use window.location for precise host/path checks
     const { hostname, pathname } = window.location
 
-    // Designer: strictly "preview.webflow.com" OR a subdomain of ".design.webflow.com"
+    // Designer: preview.webflow.com or *.design.webflow.com
     const isDesigner = hostname === 'preview.webflow.com' || hostname.endsWith('.design.webflow.com')
 
-    // Dashboard/Auth: strictly "webflow.com" domain (with specific paths)
+    // Dashboard/Auth: webflow.com + known auth/dashboard paths
     const isWebflowCom = hostname === 'webflow.com'
     const isDashboardOrAuth = isWebflowCom && (
         pathname.startsWith('/dashboard') ||
@@ -62,28 +85,32 @@ export function injectDashboardFooter(
 function injectDesignerFooter(
     currentLanguage: Exclude<LanguageCode, 'off'>,
     isEnabled: boolean,
-    onUpdate?: (settings: SettingsUpdate) => void
+    onUpdate?: (settings: SettingsUpdate) => void,
+    attempt = 0
 ) {
-    // Target: Specific settings pane
+    // Prefer the site settings pane
     let target = document.querySelector('div[data-dsi-area="siteSettings"] .bem-Pane_Body_Inner')
 
-    // Fallback to main left nav if the detailed pane isn't found (for broader compatibility)
+    // Fallback to left nav if pane isn't present (broader compatibility)
     if (!target) {
         target = document.querySelector('nav[data-sc="LeftNavView VStack Stack View"]')
     }
 
-    if (!target) return
+    if (!target) {
+        if (attempt < MAX_RETRIES) {
+            setTimeout(() => injectDesignerFooter(currentLanguage, isEnabled, onUpdate, attempt + 1), RETRY_INTERVAL_MS)
+        }
+        return
+    }
 
     const footerId = 'webflow-ui-localization-footer'
     let footer = document.getElementById(footerId)
 
-    // Check availability and location
+    // If footer already exists in the correct container, reuse it
     if (footer && footer.dataset.type === 'designer' && footer.parentElement === target) {
         if (target.lastElementChild !== footer) target.appendChild(footer)
-        // Update selection state if needed (though interaction handling usually covers this)
-        // To be safe, we re-render if fundamental state changed externally
         if (footer.dataset.lang !== currentLanguage || footer.dataset.enabled !== String(isEnabled)) {
-            // Re-render
+            // Force re-render if state drifted
         } else {
             return
         }
@@ -96,8 +123,7 @@ function injectDesignerFooter(
         footer.className = 'wul-footer wul-footer--designer'
         target.appendChild(footer)
     } else {
-        // Ensure footer is always at the bottom.
-        // If Webflow's UI added new elements (like a popped-up menu), we move our footer to the end to maintain order.
+        // Keep footer anchored as the last child
         if (footer.parentElement !== target) target.appendChild(footer)
         else if (target.lastElementChild !== footer) target.appendChild(footer)
     }
@@ -129,7 +155,7 @@ function injectDesignerFooter(
     footer.dataset.lang = currentLanguage
     footer.dataset.enabled = String(isEnabled)
 
-    // Set Select Value
+    // Bind language selector
     const select = footer.querySelector('#wul-language-select') as HTMLSelectElement
     if (select) {
         select.value = selectValue
@@ -153,9 +179,14 @@ function injectDesignerFooter(
     bindOptionsLink(footer)
 }
 
-function injectSimpleFooter(currentLanguage: Exclude<LanguageCode, 'off'>, isEnabled: boolean) {
+function injectSimpleFooter(currentLanguage: Exclude<LanguageCode, 'off'>, isEnabled: boolean, attempt = 0) {
     const target = document.querySelector('nav[data-sc="LeftNavView VStack Stack View"]')
-    if (!target) return
+    if (!target) {
+        if (attempt < MAX_RETRIES) {
+            setTimeout(() => injectSimpleFooter(currentLanguage, isEnabled, attempt + 1), RETRY_INTERVAL_MS)
+        }
+        return
+    }
 
     const footerId = 'webflow-ui-localization-footer'
     let footer = document.getElementById(footerId)
@@ -199,7 +230,7 @@ function getLocalizedStrings(currentLanguage: Exclude<LanguageCode, 'off'>, isEn
     const defaultMsg = 'Click the Webflow UI Localization browser extension icon to enable / disable translations at any time.'
     const defaultOpt = 'Options'
     const defaultJoin = 'Join translations?'
-    const madeByText = 'Made with ♥ by Anthony C.'
+    const madeByText = 'Made with &hearts; by Anthony C.'
 
     const getString = (key: string, fallback: string) => {
         if (!isEnabled) return fallback
@@ -220,10 +251,12 @@ function bindOptionsLink(footer: HTMLElement) {
     if (optionsLink) {
         optionsLink.onclick = (e) => {
             e.preventDefault()
-            if (chrome?.runtime?.sendMessage) {
+            if (chrome?.runtime?.openOptionsPage) {
+                chrome.runtime.openOptionsPage()
+            } else if (chrome?.runtime?.sendMessage) {
                 chrome.runtime.sendMessage({ action: 'openOptionsPage' })
             } else {
-                alert('Please reload the page to use this feature.')
+                console.warn('Unable to open extension options page.')
             }
         }
     }

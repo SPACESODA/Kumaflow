@@ -143,12 +143,12 @@ function buildReplacements(dictionary: Dictionary, strict: boolean): Replacement
   const entries = Object.entries(dictionary).sort(([a], [b]) => b.length - a.length)
 
   if (strict) {
-    return entries.map(([source, replacement]) =>
+    return entries.map(([source, replacement]: [string, string]) =>
       buildTokenizedReplacement(source, replacement, FLEXIBLE_STRICT_WHITESPACE)
     )
   }
 
-  return entries.map(([source, replacement]) => ({
+  return entries.map(([source, replacement]: [string, string]) => ({
     regex: new RegExp(escapeRegExp(source), 'g'),
     replacement,
     marker: source.slice(0, 6)
@@ -159,12 +159,12 @@ function buildReverseReplacements(dictionary: Dictionary, strict: boolean): Repl
   const entries = Object.entries(dictionary).sort(([a], [b]) => b.length - a.length)
 
   if (strict) {
-    return entries.map(([source, replacement]) =>
+    return entries.map(([source, replacement]: [string, string]) =>
       buildTokenizedReplacement(replacement, source, FLEXIBLE_STRICT_WHITESPACE)
     )
   }
 
-  return entries.map(([source, replacement]) => ({
+  return entries.map(([source, replacement]: [string, string]) => ({
     regex: new RegExp(escapeRegExp(replacement), 'g'),
     replacement: source,
     marker: replacement.slice(0, 6)
@@ -366,7 +366,7 @@ function flushPending() {
 
   pendingTextNodes.clear()
   pendingElements.clear()
-  injectDashboardFooter(currentLanguage, isEnabled, (updates) => {
+  injectDashboardFooter(currentLanguage, isEnabled, (updates: any) => {
     applySettings({ ...latestSettings, ...updates })
   })
 }
