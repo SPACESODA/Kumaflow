@@ -137,13 +137,15 @@ function buildTokenizedReplacement(
 }
 
 function buildReplacements(dictionary: Dictionary, strict: boolean): Replacement[] {
+  const entries = Object.entries(dictionary).sort(([a], [b]) => b.length - a.length)
+
   if (strict) {
-    return Object.entries(dictionary).map(([source, replacement]) =>
+    return entries.map(([source, replacement]) =>
       buildTokenizedReplacement(source, replacement, FLEXIBLE_STRICT_WHITESPACE)
     )
   }
 
-  return Object.entries(dictionary).map(([source, replacement]) => ({
+  return entries.map(([source, replacement]) => ({
     regex: new RegExp(escapeRegExp(source), 'g'),
     replacement,
     marker: source.slice(0, 6)
@@ -151,13 +153,15 @@ function buildReplacements(dictionary: Dictionary, strict: boolean): Replacement
 }
 
 function buildReverseReplacements(dictionary: Dictionary, strict: boolean): Replacement[] {
+  const entries = Object.entries(dictionary).sort(([a], [b]) => b.length - a.length)
+
   if (strict) {
-    return Object.entries(dictionary).map(([source, replacement]) =>
+    return entries.map(([source, replacement]) =>
       buildTokenizedReplacement(replacement, source, FLEXIBLE_STRICT_WHITESPACE)
     )
   }
 
-  return Object.entries(dictionary).map(([source, replacement]) => ({
+  return entries.map(([source, replacement]) => ({
     regex: new RegExp(escapeRegExp(replacement), 'g'),
     replacement: source,
     marker: replacement.slice(0, 6)
@@ -212,24 +216,11 @@ let titleObserver: MutationObserver | null = null
 
 function translateTitle() {
   if (!isEnabled) return
-  // If we haven't stored original title yet, do it now? 
-  // But title might change dynamically. 
-  // Ideally, we translate the *current* title.
-  // We need to avoid double translation if we observe our own change.
-  // Similar to text nodes, we probably want to just apply forward replacements.
-  // Use document.title directly.
 
   const current = document.title
   const { updated, changed } = applyReplacements(current, activeReplacements)
-  if (changed) {
-    // If we change it, the observer will fire. We need to handle that loop?
-    // MutationObserver is sync or async? async microtask.
-    // If we just set it, it triggers.
-    // We can temporarily disconnect observer or use a flag?
-    // Or just check if 'updated' is same as current (handled by logic).
-    // If 'current' is already translated, 'applyReplacements' (if strict) shouldn't match?
-    // But if loose, it might mess up.
-    // Usually safe if replacements are idempotent or distinct.
+  
+  if (changed && updated !== current) {
     document.title = updated
   }
 }
