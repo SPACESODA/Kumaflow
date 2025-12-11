@@ -20,13 +20,6 @@ const BUNDLED_LANGUAGES: Record<Exclude<LanguageCode, 'off'>, Dictionary> = {
   ko
 }
 
-const REMOTE_LOCALE_URLS: Partial<Record<Exclude<LanguageCode, 'off'>, string>> = {
-  ja: 'https://cdn.jsdelivr.net/gh/SPACESODA/Webflow-UI-Localization@latest/src/locales/ja.json',
-  'zh-TW': 'https://cdn.jsdelivr.net/gh/SPACESODA/Webflow-UI-Localization@latest/src/locales/zh-TW.json',
-  'zh-CN': 'https://cdn.jsdelivr.net/gh/SPACESODA/Webflow-UI-Localization@latest/src/locales/zh-CN.json',
-  ko: 'https://cdn.jsdelivr.net/gh/SPACESODA/Webflow-UI-Localization@latest/src/locales/ko.json'
-}
-
 const DEFAULT_LANGUAGE: Exclude<LanguageCode, 'off'> = 'ja'
 const DEFAULT_SETTINGS: Settings = { language: DEFAULT_LANGUAGE, enabled: true, strictMatching: true, useCdn: true }
 const FLEXIBLE_STRICT_WHITESPACE = true
@@ -60,6 +53,13 @@ let observer: MutationObserver | null = null
 let flushScheduled = false
 const pendingTextNodes = new Set<Text>()
 const pendingElements = new Set<Element>()
+const CDN_REPO_OWNER = 'SPACESODA'
+const CDN_REPO_NAME = 'Webflow-UI-Localization'
+const CDN_REPO_BRANCH = 'main'
+const CDN_SHA_CACHE_TTL = 60 * 60 * 1000 // 60 minutes
+const CDN_SHA_STORAGE_KEY = 'cdnSha'
+let cachedCdnSha: string | null = null
+let cachedCdnShaFetchedAt = 0
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -81,43 +81,53 @@ function buildTokenizedReplacement(
   targetString: string,
   flexible: boolean
 ): Replacement {
-  // 1. Identify tokens in source: {name}, {count}, {*}, etc.
-  const tokenRegex = /\{[^}]+\}/g
-  const sourceTokens: string[] = sourceString.match(tokenRegex) || []
-
-  // 2. Build Regex Pattern
-  // Split source by tokens to get static parts
-  const parts = sourceString.split(tokenRegex)
+  // 1. Build Regex Pattern & Identify Tokens
+  // Split keeps placeholder names because the capturing group is retained
+  // We use this single pass to ensure token names in `tokenNames` 
+  // exactly match the capture groups in the generated regex.
+  const parts = sourceString.split(/\{([^}]+)\}/g)
 
   const toPattern = flexible ? buildFlexiblePattern : escapeRegExp
+  const tokenNames: string[] = []
 
   let patternString = '^(\\s*)'
 
   parts.forEach((part, index) => {
-    if (part) {
+    const isToken = index % 2 === 1
+    if (isToken) {
+      // It's a token (e.g. "name" from "{name}")
+      // We normalize it to the full placeholder format "{name}" for the pool lookup
+      // or just keep the name? 
+      // scripts.ts logic uses "{name}" as keys in valuePool. 
+      // The split gives us just "name". Let's reconstruct it.
+      const tokenName = `{${part}}`
+      tokenNames.push(tokenName)
+
+      // Require at least one character for placeholders to avoid "ghost" matches
+      patternString += '(.+?)'
+    } else if (part) {
+      // It's static text
       patternString += toPattern(part)
-    }
-    if (index < parts.length - 1) {
-      patternString += '([\\s\\S]*?)' // Capture content for the token
     }
   })
 
   patternString += '(\\s*)$'
   const regex = new RegExp(patternString)
 
-  // 3. Build Replacement Function
+  // 2. Build Replacement Function
   const replacement = (_match: string, ...args: any[]) => {
     // args: [leading, t1, t2, ..., tN, trailing, offset, string]
     // leading = args[0]
-    // trailing = args[sourceTokens.length + 1]
+    // trailing = args[tokenNames.length + 1]
 
     const leading = args[0]
-    const trailing = args[sourceTokens.length + 1]
+    const trailing = args[tokenNames.length + 1]
 
     // Map token names to captured values
     // Using a pool to handle repeated tokens like {*}
     const valuePool: Record<string, string[]> = {}
-    sourceTokens.forEach((tokenName, i) => {
+
+    tokenNames.forEach((tokenName, i) => {
       if (!valuePool[tokenName]) valuePool[tokenName] = []
       valuePool[tokenName].push(args[i + 1])
     })
@@ -130,11 +140,20 @@ function buildTokenizedReplacement(
       currentPool[k] = [...currentPool[k]]
     }
 
-    const result = targetString.replace(tokenRegex, (token) => {
+    // We use the same regex for target replacement to find where to put values
+    const targetTokenRegex = /\{[^}]+\}/g
+
+    const result = targetString.replace(targetTokenRegex, (token) => {
       if (currentPool[token] && currentPool[token].length > 0) {
         return currentPool[token].shift()!
       }
-      return token // Leave as is if no value captured?
+
+      // Warn if we have a placeholder in translation that we can't fill
+      // This usually means the translation file has a typo (e.g. {naame} instead of {name})
+      // or expects a variable that the source text didn't provide.
+      console.warn(`[Webflow-Localization] Missing value for token "${token}" in translation for: "${sourceString}"`)
+
+      return token // Leave as is
     })
 
     return `${leading}${result}${trailing}`
@@ -467,6 +486,39 @@ function updateDocumentLang(language: LanguageCode, enabled: boolean) {
   document.documentElement?.setAttribute('lang', langToSet)
 }
 
+async function fetchLatestCdnSha(): Promise<string> {
+  const now = Date.now()
+  if (cachedCdnSha && now - cachedCdnShaFetchedAt < CDN_SHA_CACHE_TTL) {
+    return cachedCdnSha
+  }
+
+  const commitUrl = `https://api.github.com/repos/${CDN_REPO_OWNER}/${CDN_REPO_NAME}/commits/${CDN_REPO_BRANCH}`
+  const response = await fetch(commitUrl, {
+    headers: { Accept: 'application/vnd.github+json' }
+  })
+  if (!response.ok) {
+    throw new Error(`Failed to fetch latest commit SHA: ${response.status}`)
+  }
+  const data = await response.json()
+  const sha = data?.sha
+  if (!sha || typeof sha !== 'string') {
+    throw new Error('Commit SHA missing in GitHub response')
+  }
+  cachedCdnSha = sha
+  cachedCdnShaFetchedAt = now
+  try {
+    getStorage().set({ [CDN_SHA_STORAGE_KEY]: sha })
+  } catch (err) {
+    // Best-effort persistence; failures are non-blocking.
+    console.warn('Could not persist CDN SHA', err)
+  }
+  return sha
+}
+
+function buildCdnLocaleUrl(code: Exclude<LanguageCode, 'off'>, sha: string): string {
+  return `https://cdn.jsdelivr.net/gh/${CDN_REPO_OWNER}/${CDN_REPO_NAME}@${sha}/src/locales/${code}.json`
+}
+
 async function fetchLocale(url: string): Promise<Dictionary> {
   const response = await fetch(url, { cache: 'no-cache' })
   if (!response.ok) {
@@ -483,13 +535,24 @@ async function fetchLocale(url: string): Promise<Dictionary> {
 async function refreshLocalesFromCdn() {
   if (!latestSettings.useCdn) return
 
+  let sha: string | null = null
+  try {
+    sha = await fetchLatestCdnSha()
+  } catch (err) {
+    console.warn('Could not fetch latest CDN SHA; keeping existing locales', err)
+    return
+  }
+
+  if (!sha) return
+
   const updates: Partial<Record<Exclude<LanguageCode, 'off'>, Dictionary>> = {}
-  const entries = Object.entries(REMOTE_LOCALE_URLS) as [Exclude<LanguageCode, 'off'>, string][]
+  const codes = Object.keys(BUNDLED_LANGUAGES) as Exclude<LanguageCode, 'off'>[]
 
   await Promise.all(
-    entries.map(async ([code, url]) => {
+    codes.map(async (code) => {
       try {
-        const locale = await fetchLocale(url)
+        const localeUrl = buildCdnLocaleUrl(code, sha)
+        const locale = await fetchLocale(localeUrl)
         updates[code] = locale
       } catch (err) {
         console.warn(`Could not refresh locale for ${code}`, err)

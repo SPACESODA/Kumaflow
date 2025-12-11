@@ -72,6 +72,8 @@ function getText(lang: LanguageCode, key: string): string {
 let lastRenderedLanguage: LanguageCode | null = null
 // Holds the current application state
 let currentSettings: Settings = { ...DEFAULT_SETTINGS }
+// Latest CDN SHA (if fetched by content script)
+let latestCdnSha: string | null = null
 
 // ---------------------------------------------------------------------------
 // DOM RENDERING
@@ -92,6 +94,7 @@ function renderApp(settings: Settings) {
 
   // Always update input states (checked/disabled) to match settings
   updateValues(root, settings)
+  updateShaBadge(root, latestCdnSha)
 }
 
 // Render the full options page for the selected language
@@ -100,10 +103,13 @@ function renderFullPage(root: HTMLElement, settings: Settings) {
 
   root.innerHTML = `
     <div class="options_shell">
-      <div>
-        <p class="eyebrow">Webflow UI Localization</p>
-        <h1 class="title">${getText(lang, 'options_title')}</h1>
-        <p class="lede">${getText(lang, 'options_description')}</p>
+      <div class="options_header">
+        <div>
+          <p class="eyebrow">Webflow UI Localization</p>
+          <h1 class="title">${getText(lang, 'options_title')}</h1>
+          <p class="lede">${getText(lang, 'options_description')}</p>
+        </div>
+        <a class="sha_badge" id="cdn_sha_badge" target="_blank" rel="noreferrer noopener"></a>
       </div>
     </div>
   `
@@ -205,6 +211,24 @@ function updateValues(root: HTMLElement, settings: Settings) {
   }
 }
 
+function updateShaBadge(root: HTMLElement, sha: string | null) {
+  const el = root.querySelector<HTMLElement>('#cdn_sha_badge')
+  if (!el) return
+  if (sha) {
+    const shortSha = sha.slice(0, 7)
+    el.textContent = `@${shortSha}`
+    el.setAttribute(
+      'href',
+      `https://cdn.jsdelivr.net/gh/SPACESODA/Webflow-UI-Localization@${shortSha}/src/locales/`
+    )
+    el.style.display = 'inline-block'
+  } else {
+    el.textContent = ''
+    el.removeAttribute('href')
+    el.style.display = 'none'
+  }
+}
+
 // ---------------------------------------------------------------------------
 // EVENTS & INTERACTION
 // ---------------------------------------------------------------------------
@@ -274,7 +298,8 @@ export default function initOptionsPage() {
   const storage = getStorage()
 
   // 1. Initial Load: Get settings from storage and render
-  storage.get(DEFAULT_SETTINGS, (items) => {
+  storage.get({ ...DEFAULT_SETTINGS, cdnSha: null }, (items) => {
+    latestCdnSha = (items as any).cdnSha || null
     const settings = { ...DEFAULT_SETTINGS, ...items }
     renderApp(settings)
   })
@@ -294,6 +319,12 @@ export default function initOptionsPage() {
           hasChange = true
         }
       })
+
+    if (changes.cdnSha && changes.cdnSha.newValue !== latestCdnSha) {
+      latestCdnSha = changes.cdnSha.newValue as string
+      const root = document.getElementById('root')
+      if (root) updateShaBadge(root, latestCdnSha)
+    }
 
     if (hasChange) {
       renderApp(newSettings)
