@@ -11,5 +11,8 @@
     "options_strict_desc": "仅在完全匹配翻译词条时才进行翻译，防止句子被部分修改。",
     "options_cdn_label": "使用最新翻译",
     "options_cdn_desc": "从 CDN 获取最新的社区翻译。关闭以仅使用内置语言包。",
+    "options_refreshing_msg": "正在刷新缓存...",
+    "options_refresh_done_msg": "缓存刷新完成，请刷新 Webflow 页面",
+    "options_saved_msg": "已保存",
     "options_contribute": "去 GitHub 抓虫"
 }

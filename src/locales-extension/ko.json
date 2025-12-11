@@ -11,5 +11,8 @@
     "options_strict_desc": "전체 텍스트가 번역 문구와 일치할 때만 번역합니다. 부분적인 문구 변경을 방지합니다.",
     "options_cdn_label": "최신 번역 사용",
     "options_cdn_desc": "CDN에서 최신 커뮤니티 번역을 가져옵니다. 끄면 내장 버전만 사용합니다.",
+    "options_refreshing_msg": "캐시 재설정 중...",
+    "options_refresh_done_msg": "캐시 재설정 완료, Webflow 페이지를 새로고침하세요",
+    "options_saved_msg": "저장됨",
     "options_contribute": "GitHub에서 개선하기"
 }

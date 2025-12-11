@@ -11,5 +11,8 @@
     "options_strict_desc": "翻訳フレーズと完全に一致する場合のみ翻訳します。部分的なフレーズの変更を防ぎます。",
     "options_cdn_label": "最新の翻訳を使用",
     "options_cdn_desc": "CDN から最新のコミュニティ翻訳を取得します。オフにすると同梱版のみを使用します。",
+    "options_refreshing_msg": "キャッシュをリセット中...",
+    "options_refresh_done_msg": "キャッシュのリセットが完了、Webflow を再読み込みしてください",
+    "options_saved_msg": "保存しました",
     "options_contribute": "GitHub で改善する"
 }

@@ -34,8 +34,7 @@ const SKIP_TAGS = new Set([
   'INPUT',
   'TEXTAREA',
   'SELECT',
-  'OPTION',
-  'BUTTON'
+  'OPTION'
 ])
 
 import { EXCLUDED_SELECTORS } from './exclusions'
@@ -61,7 +60,8 @@ const LOCALE_PRIMARY_BASE = 'https://webflow-ui-localization.pages.dev/src/local
 const LOCALE_SECONDARY_BASE =
   'https://cdn.jsdelivr.net/gh/SPACESODA/Webflow-UI-Localization@latest/src/locales'
 const LOCALE_CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours
-const LOCALE_CACHE_KEY = 'cdnLocaleCache'
+import { LOCALE_CACHE_KEY } from '../constants'
+// const LOCALE_CACHE_KEY = 'cdnLocaleCache_v1'
 type CachedLocaleEntry = { dictionary: Dictionary; fetchedAt: number; source: 'primary' | 'secondary' }
 let localeCache: Record<Exclude<LanguageCode, 'off'>, CachedLocaleEntry> = {} as any
 let cacheLoaded = false

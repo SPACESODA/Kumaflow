@@ -26,7 +26,8 @@ const LANGUAGES: Array<{ value: LanguageCode; label: string }> = [
   { value: 'ko', label: 'Korean 한국어' }
 ]
 
-const LOCALE_CACHE_KEY = 'cdnLocaleCache'
+import { LOCALE_CACHE_KEY } from '../constants'
+// const LOCALE_CACHE_KEY = 'cdnLocaleCache'
 
 // Extension UI translations (used to localize the options page itself)
 const EXTENSION_LOCALES: Record<Exclude<LanguageCode, 'off'>, Dictionary> = {
@@ -47,6 +48,9 @@ const FALLBACK_STRINGS: Dictionary = {
   options_strict_desc: 'Only translate when the full text matches our translation phrase. Prevents partial phrase changes.',
   options_cdn_label: 'Use the latest translation updates',
   options_cdn_desc: 'Fetch the latest translations from CDN. Turn off to use only the bundled version.',
+  options_refreshing_msg: 'Refreshing Cache...',
+  options_refresh_done_msg: 'Done: Please reload Webflow pages.',
+  options_saved_msg: 'Saved',
   options_contribute: 'Contribute on GitHub',
   footer_join: 'Join translations'
 }
@@ -82,6 +86,8 @@ let lastRenderedLanguage: LanguageCode | null = null
 let currentSettings: Settings = { ...DEFAULT_SETTINGS }
 // Latest locale source metadata (per language)
 let latestLocaleMeta: Record<Exclude<LanguageCode, 'off'>, LocaleMeta> | null = null
+// Track if a manual refresh is in progress to prevent UI flickering
+let isManuallyRefreshing = false
 
 // ---------------------------------------------------------------------------
 // DOM RENDERING
@@ -102,7 +108,11 @@ function renderApp(settings: Settings) {
 
   // Always update input states (checked/disabled) to match settings
   updateValues(root, settings)
-  updateLocaleBadge(root, latestLocaleMeta, settings)
+
+  // Only update badge if not in the middle of a manual refresh result
+  if (!isManuallyRefreshing) {
+    updateLocaleBadge(root, latestLocaleMeta, settings)
+  }
 }
 
 // Render the full options page for the selected language
@@ -242,14 +252,21 @@ function updateLocaleBadge(
     el.textContent = 'JSON: Bundled'
     el.removeAttribute('href')
     el.style.display = 'inline-block'
+    el.classList.remove('clickable')
+    el.removeAttribute('title')
     return
   }
+
+  // If we have manual refresh state and no entry (cache cleared), keep showing manual message?
+  // Use the standard logic for now, but click handler will override text content manually
 
   // Otherwise show the fetched source or fall back to bundled
   if (!entry) {
     el.textContent = 'JSON: Bundled'
     el.removeAttribute('href')
     el.style.display = 'inline-block'
+    el.classList.remove('clickable')
+    el.removeAttribute('title')
     return
   }
 
@@ -261,6 +278,12 @@ function updateLocaleBadge(
   el.textContent = label
   el.removeAttribute('href')
   el.style.display = 'inline-block'
+
+  if (useCdn) {
+    el.classList.add('clickable')
+  } else {
+    el.classList.remove('clickable')
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -285,7 +308,7 @@ function bindEvents(root: HTMLElement) {
 
       // Save to storage
       storage.set({ [key]: val }, () => {
-        setStatusMsg(root, 'Saved')
+        setStatusMsg(root, getText(currentSettings.language, 'options_saved_msg'))
       })
     })
   })
@@ -299,13 +322,34 @@ function bindEvents(root: HTMLElement) {
 
       // Saving language triggers 'onChanged', which will call renderApp() and re-render the page.
       storage.set({ language: val, enabled: true }, () => {
-        setStatusMsg(root, 'Saved')
+        setStatusMsg(root, getText(currentSettings.language, 'options_saved_msg'))
       })
 
       // Updates internal state loosely until the re-render happens
       currentSettings.language = val
       currentSettings.enabled = true
     }
+  })
+
+  // Badge click handler (Force Refresh)
+  const badge = root.querySelector('#cdn_json_badge')
+  badge?.addEventListener('click', () => {
+    // Only allow refresh if using CDN (checked via valid class or settings)
+    if (!currentSettings.useCdn) return
+
+    const el = badge as HTMLElement
+    // 1. Set Loading Text
+    el.textContent = getText(currentSettings.language, 'options_refreshing_msg')
+    isManuallyRefreshing = true
+
+    chrome.storage.local.remove(LOCALE_CACHE_KEY, () => {
+      // 2. Set Done Text on completion
+      // We keep isManuallyRefreshing = true so onChanged doesn't overwrite this with "Bundled"
+      el.textContent = getText(currentSettings.language, 'options_refresh_done_msg')
+      // NOTE: We do NOT set isManuallyRefreshing back to false here. 
+      // It stays true so this message persists until the user reloads the Page
+      // or until a NEW cache entry appears (which happens when they visit Webflow).
+    })
   })
 }
 
@@ -358,9 +402,19 @@ export default function initOptionsPage() {
       })
 
     if (changes[LOCALE_CACHE_KEY]) {
-      latestLocaleMeta = extractLocaleMeta(changes[LOCALE_CACHE_KEY].newValue)
+      const newValue = changes[LOCALE_CACHE_KEY].newValue
+      latestLocaleMeta = extractLocaleMeta(newValue)
+
+      // If we receive a NEW valid cache (fetched by content script), we can clear the manual refresh state
+      // and show the new source (e.g. Cloudflare).
+      if (newValue && Object.keys(newValue).length > 0) {
+        isManuallyRefreshing = false
+      }
+
       const root = document.getElementById('root')
-      if (root) updateLocaleBadge(root, latestLocaleMeta, newSettings)
+      if (root && !isManuallyRefreshing) {
+        updateLocaleBadge(root, latestLocaleMeta, newSettings)
+      }
     }
 
     if (hasChange) {
