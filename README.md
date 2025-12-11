@@ -35,8 +35,7 @@ The plan is to support Japanese, Traditional Chinese, Simplified Chinese, and Ko
 
 **Join to translate together on POEditor 🦜**
 
-Contributions to terms (also called strings or nodes) are especially appreciated —  
-and it’s easy to get started!   
+Right now, adding accurate **terms** is the most important part of the project — so feel free to jump in and help! It’s easy to get started on POEditor:  
 https://poeditor.com/join/project/7drFUDh3dh
 
 Latest locale JSON files via Cloudflare Pages / jsDelivr:
