@@ -12,5 +12,7 @@ export const EXCLUDED_SELECTORS = [
     // Add more selectors here...
     // There are some parts in the Webflow Designer that should not be translated.
     'div.bem-SearchResultPreview',
-    '[data-automation-id="page-list-row-wrapper"] div.bem-List_Cell'
+    '[data-automation-id="page-list-row-wrapper"] div.bem-List_Cell',
+    '[data-palette="CMSListItem"]',
+    '[data-palette="CMSItemsListPanelTitle"]'
 ];
