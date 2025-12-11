@@ -1,5 +1,7 @@
 <p align="center">
-  <img src="https://webflow-ui-localization.pages.dev/src/images/icon-128.png" alt="Kumaflow - Webflow UI Localization" width="96">
+  <a href="https://github.com/SPACESODA/Kumaflow">
+    <img src="https://webflow-ui-localization.pages.dev/src/images/icon-128.png" alt="Kumaflow - Webflow UI Localization" width="128">
+  </a>
 </p>
 
 [powered-image]: https://img.shields.io/badge/Powered%20by-Extension.js-0971fe

@@ -176,7 +176,10 @@ function buildTokenizedReplacement(
 }
 
 function buildReplacements(dictionary: Dictionary, strict: boolean): { exact: Map<string, string>, complex: Replacement[] } {
-  const entries = Object.entries(dictionary).sort(([a], [b]) => b.length - a.length)
+  const entries = Object.entries(dictionary)
+    // Treat empty strings as untranslated so we display the original text
+    .filter(([_, replacement]) => replacement !== '')
+    .sort(([a], [b]) => b.length - a.length)
   const exact = new Map<string, string>()
   const complex: Replacement[] = []
 
@@ -207,7 +210,10 @@ function buildReplacements(dictionary: Dictionary, strict: boolean): { exact: Ma
 }
 
 function buildReverseReplacements(dictionary: Dictionary, strict: boolean): { exact: Map<string, string>, complex: Replacement[] } {
-  const entries = Object.entries(dictionary).sort(([a], [b]) => b.length - a.length)
+  const entries = Object.entries(dictionary)
+    // Ignore empty translations when reverting to avoid clearing text
+    .filter(([_, replacement]) => replacement !== '')
+    .sort(([a], [b]) => b.length - a.length)
   const exact = new Map<string, string>()
   const complex: Replacement[] = []
 
