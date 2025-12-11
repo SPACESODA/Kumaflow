@@ -43,7 +43,9 @@ import { EXCLUDED_SELECTORS } from './exclusions'
 const IGNORE_PATTERN = EXCLUDED_SELECTORS.join(',')
 
 let activeReplacements: Replacement[] = []
+let activeExactReplacements: Map<string, string> = new Map()
 let reverseReplacements: Replacement[] = []
+let reverseExactReplacements: Map<string, string> = new Map()
 let currentLanguage: Exclude<LanguageCode, 'off'> = DEFAULT_LANGUAGE
 let isEnabled = true
 let strictMatching = true
@@ -163,36 +165,65 @@ function buildTokenizedReplacement(
   return { regex, replacement }
 }
 
-function buildReplacements(dictionary: Dictionary, strict: boolean): Replacement[] {
+function buildReplacements(dictionary: Dictionary, strict: boolean): { exact: Map<string, string>, complex: Replacement[] } {
   const entries = Object.entries(dictionary).sort(([a], [b]) => b.length - a.length)
+  const exact = new Map<string, string>()
+  const complex: Replacement[] = []
 
   if (strict) {
-    return entries.map(([source, replacement]: [string, string]) =>
-      buildTokenizedReplacement(source, replacement, FLEXIBLE_STRICT_WHITESPACE)
-    )
+    entries.forEach(([source, replacement]) => {
+      // If source has placeholders, use regex
+      if (source.includes('{') && source.includes('}')) {
+        complex.push(buildTokenizedReplacement(source, replacement, FLEXIBLE_STRICT_WHITESPACE))
+      } else {
+        // Exact match optimization
+        // We normalize the key for lookup
+        const key = normalizeWhitespace(source).trim()
+        if (key) {
+          exact.set(key, replacement)
+        }
+      }
+    })
+    return { exact, complex }
   }
 
-  return entries.map(([source, replacement]: [string, string]) => ({
+  // Non-strict mode always uses regex for partial matching
+  const legacyReplacements = entries.map(([source, replacement]: [string, string]) => ({
     regex: new RegExp(escapeRegExp(source), 'g'),
     replacement,
     marker: source.slice(0, 6)
   }))
+
+  return { exact: new Map(), complex: legacyReplacements }
 }
 
-function buildReverseReplacements(dictionary: Dictionary, strict: boolean): Replacement[] {
+function buildReverseReplacements(dictionary: Dictionary, strict: boolean): { exact: Map<string, string>, complex: Replacement[] } {
   const entries = Object.entries(dictionary).sort(([a], [b]) => b.length - a.length)
+  const exact = new Map<string, string>()
+  const complex: Replacement[] = []
 
   if (strict) {
-    return entries.map(([source, replacement]: [string, string]) =>
-      buildTokenizedReplacement(replacement, source, FLEXIBLE_STRICT_WHITESPACE)
-    )
+    entries.forEach(([source, replacement]) => {
+      // Reverse direction: replacement is the key
+      if (replacement.includes('{') && replacement.includes('}')) {
+        complex.push(buildTokenizedReplacement(replacement, source, FLEXIBLE_STRICT_WHITESPACE))
+      } else {
+        const key = normalizeWhitespace(replacement).trim()
+        if (key) {
+          exact.set(key, source)
+        }
+      }
+    })
+    return { exact, complex }
   }
 
-  return entries.map(([source, replacement]: [string, string]) => ({
+  const legacyReplacements = entries.map(([source, replacement]: [string, string]) => ({
     regex: new RegExp(escapeRegExp(replacement), 'g'),
     replacement: source,
     marker: replacement.slice(0, 6)
   }))
+
+  return { exact: new Map(), complex: legacyReplacements }
 }
 
 function maybeContains(text: string, marker?: string) {
@@ -200,8 +231,28 @@ function maybeContains(text: string, marker?: string) {
   return text.includes(marker)
 }
 
-function applyReplacements(text: string, replacements: Replacement[]): { updated: string; changed: boolean } {
-  if (!text.trim() || !replacements.length) return { updated: text, changed: false }
+function applyReplacements(
+  text: string,
+  replacements: Replacement[],
+  exactMap: Map<string, string>
+): { updated: string; changed: boolean } {
+  if (!text.trim()) return { updated: text, changed: false }
+
+  // 1. Exact Match Optimization (Strict Mode)
+  if (exactMap.size > 0) {
+    const normalized = normalizeWhitespace(text).trim()
+    if (exactMap.has(normalized)) {
+      const replacement = exactMap.get(normalized)!
+
+      // Preserve leading/trailing whitespace
+      const match = text.match(/^(\s*)([\s\S]*?)(\s*)$/)
+      if (match) {
+        return { updated: match[1] + replacement + match[3], changed: true }
+      }
+    }
+  }
+
+  if (!replacements.length) return { updated: text, changed: false }
 
   let updated = text
   let changed = false
@@ -221,7 +272,7 @@ function applyReplacements(text: string, replacements: Replacement[]): { updated
 
 function translateTextNode(node: Text) {
   if (!isEnabled) return
-  const { updated, changed } = applyReplacements(node.data, activeReplacements)
+  const { updated, changed } = applyReplacements(node.data, activeReplacements, activeExactReplacements)
   if (changed) {
     node.data = updated
   }
@@ -233,7 +284,7 @@ function revertTextNode(node: Text) {
   // (before switching to the new language).
   // The caller is responsible for deciding when to revert.
 
-  const { updated, changed } = applyReplacements(node.data, reverseReplacements)
+  const { updated, changed } = applyReplacements(node.data, reverseReplacements, reverseExactReplacements)
   if (changed) {
     node.data = updated
   }
@@ -245,7 +296,7 @@ function translateTitle() {
   if (!isEnabled) return
 
   const current = document.title
-  const { updated, changed } = applyReplacements(current, activeReplacements)
+  const { updated, changed } = applyReplacements(current, activeReplacements, activeExactReplacements)
 
   if (changed && updated !== current) {
     document.title = updated
@@ -255,28 +306,32 @@ function translateTitle() {
 function revertTitle() {
   // Removed isEnabled check for same reason as revertTextNode
   const current = document.title
-  const { updated, changed } = applyReplacements(current, reverseReplacements)
+  const { updated, changed } = applyReplacements(current, reverseReplacements, reverseExactReplacements)
   if (changed) {
     document.title = updated
   }
 }
 
-function observeTitle() {
-  if (titleObserver) titleObserver.disconnect()
+const handleTitleMutations: MutationCallback = () => {
+  // When title changes (by app or by us)
+  // If by us, we probably shouldn't react?
+  // But the app might overwrite our translation with English.
+  // So we need to re-apply translation.
+  // To avoid loop: check if translation needed.
+  if (isEnabled) {
+    translateTitle()
+  }
+}
 
+function observeTitle() {
   const titleEl = document.querySelector('title')
   if (!titleEl) return // Should observe head if title doesn't exist yet? Webflow usually has it.
 
-  titleObserver = new MutationObserver(() => {
-    // When title changes (by app or by us)
-    // If by us, we probably shouldn't react?
-    // But the app might overwrite our translation with English.
-    // So we need to re-apply translation.
-    // To avoid loop: check if translation needed.
-    if (isEnabled) {
-      translateTitle()
-    }
-  })
+  if (!titleObserver) {
+    titleObserver = new MutationObserver(handleTitleMutations)
+  } else {
+    titleObserver.disconnect()
+  }
 
   titleObserver.observe(titleEl, { childList: true, characterData: true, subtree: true })
 }
@@ -333,7 +388,7 @@ function translatePlaceholder(element: HTMLInputElement | HTMLTextAreaElement) {
   const current = element.placeholder
   if (!current) return
 
-  const { updated, changed } = applyReplacements(current, activeReplacements)
+  const { updated, changed } = applyReplacements(current, activeReplacements, activeExactReplacements)
   if (changed) {
     element.placeholder = updated
   }
@@ -343,7 +398,7 @@ function revertPlaceholder(element: HTMLInputElement | HTMLTextAreaElement) {
   const current = element.placeholder
   if (!current) return
 
-  const { updated, changed } = applyReplacements(current, reverseReplacements)
+  const { updated, changed } = applyReplacements(current, reverseReplacements, reverseExactReplacements)
   if (changed) {
     element.placeholder = updated
   }
@@ -375,6 +430,11 @@ function flushPending() {
   flushScheduled = false
   if (!document.body) return
 
+  // Suspend observers to prevent infinite loops and performance issues
+  // caused by our own mutations triggering the observer again.
+  if (observer) observer.disconnect()
+  if (titleObserver) titleObserver.disconnect()
+
   if (isEnabled) {
     pendingTextNodes.forEach((text) => translateTextNode(text))
     pendingElements.forEach((element) => {
@@ -391,9 +451,17 @@ function flushPending() {
 
   pendingTextNodes.clear()
   pendingElements.clear()
+
   injectDashboardFooter(currentLanguage, isEnabled, (updates: any) => {
     applySettings({ ...latestSettings, ...updates })
   })
+
+  // Resume observers
+  // We re-call observe functions which re-instantiate or re-connect the observers.
+  if (isEnabled) {
+    observeDocument()
+    observeTitle()
+  }
 }
 
 
@@ -411,35 +479,40 @@ function scheduleFlush() {
   requestAnimationFrame(runner)
 }
 
-function observeDocument() {
-  if (observer) observer.disconnect()
-  observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      if (mutation.type === 'characterData') {
-        if (mutation.target.nodeType === Node.TEXT_NODE) {
-          pendingTextNodes.add(mutation.target as Text)
-        }
-      } else if (mutation.type === 'attributes' && mutation.attributeName === 'placeholder') {
-        // Handle placeholder change
-        const target = mutation.target as HTMLInputElement | HTMLTextAreaElement
-        pendingElements.add(target)
-        // We add to pendingElements so it gets processed by translatePlaceholdersWithin
-        // Optimization: could have specific set for attributes but this works since pendingElements triggers scan
+const handleDocumentMutations: MutationCallback = (mutations) => {
+  mutations.forEach((mutation) => {
+    if (mutation.type === 'characterData') {
+      if (mutation.target.nodeType === Node.TEXT_NODE) {
+        pendingTextNodes.add(mutation.target as Text)
       }
-
-      mutation.addedNodes.forEach((node) => {
-        if (node.nodeType === Node.TEXT_NODE) {
-          pendingTextNodes.add(node as Text)
-        } else if (node.nodeType === Node.ELEMENT_NODE) {
-          pendingElements.add(node as Element)
-        }
-      })
-    })
-
-    if (pendingTextNodes.size || pendingElements.size) {
-      scheduleFlush()
+    } else if (mutation.type === 'attributes' && mutation.attributeName === 'placeholder') {
+      // Handle placeholder change
+      const target = mutation.target as HTMLInputElement | HTMLTextAreaElement
+      pendingElements.add(target)
+      // We add to pendingElements so it gets processed by translatePlaceholdersWithin
+      // Optimization: could have specific set for attributes but this works since pendingElements triggers scan
     }
+
+    mutation.addedNodes.forEach((node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        pendingTextNodes.add(node as Text)
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        pendingElements.add(node as Element)
+      }
+    })
   })
+
+  if (pendingTextNodes.size || pendingElements.size) {
+    scheduleFlush()
+  }
+}
+
+function observeDocument() {
+  if (!observer) {
+    observer = new MutationObserver(handleDocumentMutations)
+  } else {
+    observer.disconnect()
+  }
 
   observer.observe(document.body, {
     characterData: true,
@@ -638,8 +711,18 @@ function applySettings(settings: Settings) {
   isEnabled = settings.enabled && settings.language !== 'off'
   strictMatching = settings.strictMatching
 
-  activeReplacements = buildReplacements(dictionary, strictMatching)
-  reverseReplacements = buildReverseReplacements(dictionary, strictMatching)
+  strictMatching = settings.strictMatching
+
+  const built = buildReplacements(dictionary, strictMatching)
+  activeReplacements = built.complex
+  activeExactReplacements = built.exact
+
+  const builtReverse = buildReverseReplacements(dictionary, strictMatching)
+  reverseReplacements = builtReverse.complex
+  reverseExactReplacements = builtReverse.exact
+
+  const activeCount = activeReplacements.length + activeExactReplacements.size
+  // console.log(`[Webflow-Localization] Loaded ${activeCount} replacements (${activeExactReplacements.size} exact, ${activeReplacements.length} complex)`)
   updateDocumentLang(currentLanguage, isEnabled)
 
   // 3. Apply new translations if enabled

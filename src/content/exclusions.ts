@@ -10,6 +10,7 @@ export const EXCLUDED_SELECTORS = [
     // '[data-pop="bomb"]',  // Attribute example
     // 'nav.qqq',            // Tag + Class example (excludes <nav class="qqq"> but not <div class="qqq">)
     // Add more selectors here...
-    // There are some parts in the Webflow Designer should not be translated.
-    
+    // There are some parts in the Webflow Designer that should not be translated.
+    'div.bem-SearchResultPreview',
+    '[data-automation-id="page-list-row-wrapper"] div.bem-List_Cell'
 ];
