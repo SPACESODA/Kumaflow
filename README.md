@@ -33,7 +33,7 @@ The plan is to support Japanese, Traditional Chinese, Simplified Chinese, and Ko
 
 ### Contribute translations
 
-**Join to translate togehter on POEditor 🦜**
+**Join to translate together on POEditor 🦜**
 
 Contributions to terms (also called strings or nodes) are especially appreciated —  
 and it’s easy to get started!   
