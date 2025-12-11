@@ -123,7 +123,7 @@ function renderFullPage(root: HTMLElement, settings: Settings) {
     <div class="options_shell">
       <div class="options_header">
         <div>
-          <p class="eyebrow">Webflow UI Localization</p>
+          <p class="eyebrow">Kumaflow - Webflow UI Localization</p>
           <h1 class="title">${getText(lang, 'options_title')}</h1>
           <p class="lede">${getText(lang, 'options_description')}</p>
         </div>

@@ -1,15 +1,15 @@
 <p align="center">
-  <img src="https://webflow-ui-localization.pages.dev/src/images/icon-128.svg" alt="Webflow UI Localization" width="96">
+  <img src="https://webflow-ui-localization.pages.dev/src/images/icon-128.png" alt="Kumaflow - Webflow UI Localization" width="96">
 </p>
 
 [powered-image]: https://img.shields.io/badge/Powered%20by-Extension.js-0971fe
 [powered-url]: https://extension.js.org
 
-# Kamoflow - Webflow UI Localization
+# Kumaflow - Webflow UI Localization
 
-**Kamoflow** is an open-source browser extension that allows you to translate the UI of Webflow Dashboard and Designer into your language!
+**Kumaflow** is an open-source browser extension that lets you translate the Webflow Dashboard pages and Designer UI into your language!
 
-It seamlessly translates the interface across the following Webflow surfaces:
+Its powerful matching engine seamlessly displays translated text across the following Webflow surfaces.
 
 Webflow pages:
 - `https://webflow.com/dashboard*`

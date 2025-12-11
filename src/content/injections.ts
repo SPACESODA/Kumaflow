@@ -227,7 +227,7 @@ function injectSimpleFooter(currentLanguage: Exclude<LanguageCode, 'off'>, isEna
 }
 
 function getLocalizedStrings(currentLanguage: Exclude<LanguageCode, 'off'>, isEnabled: boolean) {
-    const defaultMsg = 'Click the Webflow UI Localization browser extension icon to enable / disable translations at any time.'
+    const defaultMsg = 'Click the Kumaflow browser extension icon to enable / disable translations at any time.'
     const defaultOpt = 'Options'
     const defaultJoin = 'Join translations?'
     const madeByText = 'Made with &hearts; by Anthony C.'
