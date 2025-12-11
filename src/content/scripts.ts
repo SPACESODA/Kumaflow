@@ -748,8 +748,6 @@ function applySettings(settings: Settings) {
   isEnabled = settings.enabled && settings.language !== 'off'
   strictMatching = settings.strictMatching
 
-  strictMatching = settings.strictMatching
-
   const built = buildReplacements(dictionary, strictMatching)
   activeReplacements = built.complex
   activeExactReplacements = built.exact

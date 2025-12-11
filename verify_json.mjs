@@ -22,7 +22,7 @@ let hasError = false;
 
 /**
  * Lightweight JSON parser to detect duplicate keys per object while still
- * validating that the JSON is well‑formed. Avoids false positives from
+ * validating that the JSON is well-formed. Avoids false positives from
  * sibling objects using the same property names.
  */
 function verifyJsonStructure(source) {
@@ -62,8 +62,8 @@ function verifyJsonStructure(source) {
                 try {
                     // Use JSON.parse to properly unescape
                     JSON.parse(raw);
-                } catch {
-                    error('Invalid string escape sequence');
+                } catch (e) {
+                    error(`Invalid string escape sequence: ${e && e.message ? e.message : e}`);
                 }
                 advance(); // closing quote
                 return raw;

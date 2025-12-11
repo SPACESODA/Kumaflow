@@ -27,7 +27,7 @@ function buildTokenizedReplacement(
         const isToken = index % 2 === 1
         if (isToken) {
             tokenNames.push(part.trim())
-            // Require at least one character for placeholders
+            // Require at least one character (non-greedy)
             patternString += '(.+?)'
         } else if (part) {
             patternString += toPattern(part)
@@ -38,19 +38,32 @@ function buildTokenizedReplacement(
     return { regex, tokenNames }
 }
 
-function testMatch(label: string, source: string, input: string) {
+function testMatch(label: string, source: string, input: string, expectedTokens?: string[]) {
     console.log(`\n--- ${label} ---`);
     const { regex, tokenNames } = buildTokenizedReplacement(source, true);
     const match = input.match(regex);
     console.log(`Matched? ${!!match}  (Input: "${input.replace(/\n/g, '\\n').replace(/\u00A0/g, '&nbsp;')}")`);
+
     if (match) {
         const captured: Record<string, string[]> = {};
         tokenNames.forEach((name, idx) => {
-            const key = name || `token${idx + 1}`;
+            const key = name || `token${idx}`;
             if (!captured[key]) captured[key] = [];
             captured[key].push(match[idx + 2]); // skip leading whitespace
         });
         console.log('Captured tokens:', captured);
+
+        if (expectedTokens) {
+            const actualTokens: string[] = tokenNames.map((_, idx) => match[idx + 2]);
+            const pass = actualTokens.length === expectedTokens.length && actualTokens.every((val, i) => val === expectedTokens[i]);
+            if (pass) {
+                console.log(`Token extraction: PASS (${JSON.stringify(actualTokens)})`);
+            } else {
+                console.error(`Token extraction: FAIL\n  Expected: ${JSON.stringify(expectedTokens)}\n  Actual:   ${JSON.stringify(actualTokens)}`);
+            }
+        }
+    } else if (expectedTokens) {
+        console.error(`Token extraction: FAIL (No match found)`);
     }
 }
 
@@ -68,7 +81,7 @@ testMatch("Case 3: Inter-word Newline", "under Made in Webflow.", "under\nMade i
 
 // Case 4: Word boundary / punctuation
 testMatch("Case 4: Punctuation", "Made in Webflow.", "Made in Webflow"); // Mismatch expected (missing dot)
-testMatch("Case 4: Trailing s", "handle", "handles"); // Expected mismatch? 
-// Regex for "handle": ^(\s*)handle(\s*)$// Case 5: Fuzzy Matching {*}
-testMatch("Case 5: Multiple {*}", "Hello {*}, welcome to {*}", "Hello John, welcome to Webflow");
-// "handles" -> matches "handle"? No. "handle" is literal. s makes it fail. Correct.
+testMatch("Case 4: Trailing s", "handle", "handles"); // Expected mismatch
+
+// Case 5: Fuzzy Matching {*}
+testMatch("Case 5: Multiple {*}", "Hello {*}, welcome to {*}", "Hello John, welcome to Webflow", ["John", "Webflow"]);

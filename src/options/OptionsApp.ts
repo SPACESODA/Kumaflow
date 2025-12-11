@@ -279,11 +279,7 @@ function updateLocaleBadge(
   el.removeAttribute('href')
   el.style.display = 'inline-block'
 
-  if (useCdn) {
-    el.classList.add('clickable')
-  } else {
-    el.classList.remove('clickable')
-  }
+  el.classList.add('clickable')
 }
 
 // ---------------------------------------------------------------------------
