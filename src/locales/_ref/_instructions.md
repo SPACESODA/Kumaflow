@@ -7,7 +7,7 @@ Read the following instructions carefully.
 
 General instructions:
 
-1. Avoid duplicate translations of the exact same key within a file.”
+1. Avoid duplicate translations of the exact same key within a file.
 2. Save the translated strings in the locale JSON files with correct formatting.
 3. DO NOT translate the words specified in `src/locales/_ref/_no_translate.md`. These are mostly brand names, web design terms, web development terms, Webflow terminology. Please use your judgment when handling translations.
 4. When updating existing JSON files, please also check the `src/locales/_ref/_new_strings.md` file for new strings.
@@ -15,7 +15,7 @@ General instructions:
 When editing the locale JSON files:
 
 1. Translate the missing strings in the JSON files according to my instructions.
-2. Preserve the original JSON structure and key order, except that you find errors. Only fill in missing values.
+2. Preserve the original JSON structure and key order, unless you find errors. Only fill in missing values.
 3. DO NOT change the existing translations, instead, take them as reference for translating the missing strings.
 4. Do NOT include explanations, comments, or markdown.
 5. The output must be directly usable as valid JSON. Perform a final check after updating the JSON files.
