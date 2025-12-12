@@ -526,5 +526,20 @@
   "Page Name": "ページ名",
   "Access Control": "アクセス制御",
   "SEO Settings": "SEO 設定",
-  "Creator credits": "クリエイタークレジット"
+  "Creator credits": "クリエイタークレジット",
+  "Automatic backup": "",
+  "Preview": "",
+  "Restore": "",
+  "Webflow automatically creates site backups as you work. The current version is also backed up when you restore an older version.": "",
+  "pages": "",
+  "styles": "",
+  "elements": "",
+  "Original version": "",
+  "The original version of this site is always available to restore.": "",
+  "mos ago": "",
+  "mo ago": "",
+  "mos ago.": "",
+  "mo ago.": "",
+  "Webflow's Google Fonts integration requires the use of the Google Fonts API, which sends End User IP addresses to Google servers and may not be GDPR-compliant. To keep from sending End User IP addresses to Google Servers, we recommend downloading fonts from Google and uploading them as custom fonts.": "",
+  "GDPR compliance": ""
 }

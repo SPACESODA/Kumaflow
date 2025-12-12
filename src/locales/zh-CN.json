@@ -526,5 +526,20 @@
   "Page Name": "页面名称",
   "Access Control": "访问控制",
   "SEO Settings": "SEO 设置",
-  "Creator credits": "创作者署名"
+  "Creator credits": "创作者署名",
+  "Automatic backup": "",
+  "Preview": "",
+  "Restore": "",
+  "Webflow automatically creates site backups as you work. The current version is also backed up when you restore an older version.": "",
+  "pages": "",
+  "styles": "",
+  "elements": "",
+  "Original version": "",
+  "The original version of this site is always available to restore.": "",
+  "mos ago": "",
+  "mo ago": "",
+  "mos ago.": "",
+  "mo ago.": "",
+  "Webflow's Google Fonts integration requires the use of the Google Fonts API, which sends End User IP addresses to Google servers and may not be GDPR-compliant. To keep from sending End User IP addresses to Google Servers, we recommend downloading fonts from Google and uploading them as custom fonts.": "",
+  "GDPR compliance": ""
 }
