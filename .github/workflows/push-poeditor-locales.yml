@@ -25,7 +25,7 @@ jobs:
         run: node verify_json.mjs
 
       - name: Push locales to POEditor (add/overwrite only)
-        run: node .github/scripts/upload-poeditor.mjs
+        run: node .github/scripts/push-poeditor.mjs
         env:
           POEDITOR_API_TOKEN: ${{ secrets.POEDITOR_API_TOKEN }}
           POEDITOR_PROJECT_ID: ${{ secrets.POEDITOR_PROJECT_ID }}

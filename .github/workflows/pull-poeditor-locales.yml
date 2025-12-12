@@ -1,4 +1,4 @@
-name: Sync locales from POEditor
+name: Pull locales from POEditor
 
 on:
   workflow_dispatch:
@@ -50,7 +50,7 @@ jobs:
           
           # Check if there are actually changes STAGED for commit
           if ! git diff --staged --quiet; then
-            git commit -m "chore: sync locales from POEditor"
+            git commit -m "chore: pull locales from POEditor"
             echo "changes=true" >> "$GITHUB_OUTPUT"
           else
             echo "No locale changes to commit."

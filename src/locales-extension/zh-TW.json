@@ -1,9 +1,9 @@
 {
-    "footer_message": "界面翻譯由 Kumaflow 擴充功能提供。點擊圖示即可隨時開／關。",
+    "footer_message": "介面翻譯由 Kumaflow 擴充功能提供。點擊圖示即可隨時開／關。",
     "footer_options": "選項",
     "footer_join": "參與翻譯",
     "options_title": "選擇您的 Webflow UI 語言",
-    "options_description": "此擴充功能會翻譯 Webflow 的 Dashboard 與 Designer 界面。為了避免混淆 Webflow 的術語，可能不會翻譯所有文字。",
+    "options_description": "此擴充功能會翻譯 Webflow 的 Dashboard 與 Designer 介面。為了避免混淆 Webflow 的術語，可能不會翻譯所有文字。",
     "options_enable_label": "啟用翻譯",
     "options_enable_desc": "關閉此選項以保持 Webflow 為英文顯示。",
     "options_status_idle": "請選擇您希望在 Webflow 中看到的語言。日後會增加更多語言！",

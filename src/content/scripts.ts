@@ -97,6 +97,15 @@ function buildFlexiblePattern(value: string): string {
     .join('\\s+')
 }
 
+function findBestMarker(source: string): string | undefined {
+  const textOnly = source.replace(/\{[^}]+\}/g, ' ')
+  const matches = textOnly.match(/[\p{L}\p{N}]+/gu)
+  if (!matches) return undefined
+  matches.sort((a, b) => b.length - a.length)
+  if (matches[0] && matches[0].length >= 2) return matches[0]
+  return undefined
+}
+
 function buildTokenizedReplacement(
   sourceString: string,
   targetString: string,
@@ -131,6 +140,7 @@ function buildTokenizedReplacement(
 
   patternString += '(\\s*)$'
   const regex = new RegExp(patternString)
+  const marker = findBestMarker(sourceString)
 
   // 2. Build Replacement Function
   const replacement = (_match: string, ...args: any[]) => {
@@ -172,7 +182,7 @@ function buildTokenizedReplacement(
     return `${leading}${result}${trailing}`
   }
 
-  return { regex, replacement }
+  return { regex, replacement, marker }
 }
 
 function buildReplacements(dictionary: Dictionary, strict: boolean): { exact: Map<string, string>, complex: Replacement[] } {

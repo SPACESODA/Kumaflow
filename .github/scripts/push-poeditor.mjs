@@ -18,10 +18,11 @@ const defaultLanguages = [
   'zh-TW=src/locales/zh-TW.json',
   'zh-CN=src/locales/zh-CN.json',
   'ko=src/locales/ko.json',
+  'th=src/locales/th.json',
   'fr=src/locales/fr.json',
   'it=src/locales/it.json',
-  'de=src/locales/de.json',
-  'es=src/locales/es.json'
+  'es=src/locales/es.json',
+  'de=src/locales/de.json'
 ].join(',');
 
 if (!languagesEnv) {
