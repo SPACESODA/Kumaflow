@@ -1,3 +1,7 @@
+// upload uses environment secrets and needs admin approval
+// does not work, and no idea how to fix it yet
+// so, for now, the simplier way is to upload manually to POEditor instead
+
 import fs from 'fs/promises';
 import path from 'path';
 
