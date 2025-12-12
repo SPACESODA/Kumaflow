@@ -3,7 +3,6 @@ import path from 'path';
 
 const token = process.env.POEDITOR_API_TOKEN;
 const projectId = process.env.POEDITOR_PROJECT_ID;
-const exportType = process.env.POEDITOR_EXPORT_TYPE || 'key_value_json';
 const languagesEnv = process.env.POEDITOR_LANGUAGES?.trim();
 
 if (!token || !projectId) {
@@ -44,18 +43,18 @@ async function uploadLocale(code, filePath) {
   // Validate JSON before upload
   JSON.parse(content);
 
-  const form = new FormData();
+  const form = new URLSearchParams();
   form.set('api_token', token);
   form.set('id', projectId);
   form.set('language', code);
   form.set('overwrite', '1'); // add/update, no deletions
   form.set('sync_terms', '0');
   form.set('updating', 'terms_translations'); // add terms and translations
-  form.set('type', exportType);
-  form.append('file', new Blob([content], { type: 'application/json' }), path.basename(filePath));
+  form.set('data', content);
 
   const response = await fetch('https://api.poeditor.com/v2/projects/upload', {
     method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: form
   });
 
