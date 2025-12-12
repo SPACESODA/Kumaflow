@@ -5,6 +5,11 @@ Locations of the JSON files: `src/locales`
 
 Read the following instructions carefully.
 
+Let’s align our understanding first:
+
+- Strings = Original Webflow UI text = Keys (in JSON) / Terms (used by POEditor) / Nodes (in programming)
+- Translations = Values (in JSON)
+
 General instructions:
 
 1. Avoid duplicate translations of the exact same key within a file.
@@ -23,7 +28,7 @@ When editing the locale JSON files:
 About translation:
 
 1. Use terminology consistent with modern web design/development across languages.
-2. Match Webflow's native UI tone. Use neutral, professional, compact, and contemporary web industry phrasing.
+2. Match Webflow's native UI meanings and tone. Use neutral, professional, compact, and contemporary web industry phrasing.
 3. Ensure overall consistency in the translations. Review adjacent translations within the same JSON file to understand the big picture and overall nuances.
 4. Make sure the translations are accurate and make sense. They should accurately reflect the UI nuances of Webflow with a strong focus on contextual accuracy.
 
