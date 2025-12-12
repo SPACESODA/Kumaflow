@@ -397,8 +397,8 @@ export default function initOptionsPage() {
       // Update settings object with any changed values
       ; (Object.keys(DEFAULT_SETTINGS) as Array<keyof Settings>).forEach(key => {
         if (changes[key]) {
-          // @ts-ignore
-          newSettings[key] = changes[key].newValue
+          // Assign newValue for this setting, asserting its type
+          newSettings[key] = changes[key].newValue as Settings[typeof key]
           hasChange = true
         }
       })
