@@ -22,7 +22,7 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Debug Variables
         run: |
@@ -42,14 +42,18 @@ jobs:
       - name: Commit changes
         id: commit
         run: |
-          if git status --porcelain | grep .; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add src/locales/*.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          # Only stage the locale files we care about
+          git add src/locales/*.json
+          
+          # Check if there are actually changes STAGED for commit
+          if ! git diff --staged --quiet; then
             git commit -m "chore: sync locales from POEditor"
             echo "changes=true" >> "$GITHUB_OUTPUT"
           else
-            echo "No changes to commit."
+            echo "No locale changes to commit."
             echo "changes=false" >> "$GITHUB_OUTPUT"
           fi
 
@@ -60,17 +64,9 @@ jobs:
       - name: Purge jsDelivr cache
         if: steps.commit.outputs.changes == 'true'
         run: |
-          urls=(
-            "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${GITHUB_REF_NAME}/src/locales/ja.json"
-            "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${GITHUB_REF_NAME}/src/locales/zh-TW.json"
-            "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${GITHUB_REF_NAME}/src/locales/zh-CN.json"
-            "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${GITHUB_REF_NAME}/src/locales/ko.json"
-            "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${GITHUB_REF_NAME}/src/locales/fr.json"
-            "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${GITHUB_REF_NAME}/src/locales/it.json"
-            "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${GITHUB_REF_NAME}/src/locales/de.json"
-            "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${GITHUB_REF_NAME}/src/locales/es.json"
-          )
-          for url in "${urls[@]}"; do
+          for file in src/locales/*.json; do
+            filename=$(basename "$file")
+            url="https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${GITHUB_REF_NAME}/src/locales/${filename}"
             echo "Purging $url"
-            curl -fsS "$url"
+            curl -fsS "$url" || echo "Failed to purge $url"
           done
