@@ -1,0 +1,18 @@
+{
+    "footer_message": "Traduction d'interface par l'extension Kumaflow. Cliquez sur l'icône pour activer/désactiver.",
+    "footer_options": "Options",
+    "footer_join": "Rejoindre la traduction",
+    "options_title": "Choisissez votre langue d'interface Webflow",
+    "options_description": "Cette extension traduit l'interface du tableau de bord et du concepteur Webflow. Pour éviter de déformer la terminologie de Webflow, certains termes peuvent ne pas être traduits.",
+    "options_enable_label": "Activer la traduction",
+    "options_enable_desc": "Désactivez cette option pour garder Webflow en anglais.",
+    "options_status_idle": "Choisissez la langue que vous souhaitez voir dans Webflow. Plus de langues à venir !",
+    "options_strict_label": "Éviter les traductions partielles (recommandé)",
+    "options_strict_desc": "Ne traduit que lorsque le texte correspond exactement à notre phrase de traduction.",
+    "options_cdn_label": "Utiliser les dernières traductions",
+    "options_cdn_desc": "Récupérer les dernières traductions de la communauté depuis le CDN.",
+    "options_refreshing_msg": "Actualisation du cache...",
+    "options_refresh_done_msg": "Terminé : Veuillez recharger les pages Webflow.",
+    "options_saved_msg": "Enregistré",
+    "options_contribute": "Contribuer sur GitHub"
+}

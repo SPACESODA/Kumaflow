@@ -29,7 +29,7 @@ Open the extension's Options page to select your language. In the Webflow Design
 
 Click the toolbar icon to toggle translations at any time. This acts as a master switch — the badge will show OFF when translations are disabled.
 
-The plan is to support Japanese, Traditional Chinese, Simplified Chinese, and Korean first, with more languages to be added over time.
+The plan is to support Japanese, Traditional Chinese, Simplified Chinese, and Korean first, with MORE languages to be added over time.
 
 ### Contribute translations
 

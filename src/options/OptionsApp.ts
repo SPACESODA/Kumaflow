@@ -3,6 +3,8 @@ import extJa from '../locales-extension/ja.json'
 import extZhTw from '../locales-extension/zh-TW.json'
 import extZhCn from '../locales-extension/zh-CN.json'
 import extKo from '../locales-extension/ko.json'
+import extTh from '../locales-extension/th.json'
+import extFr from '../locales-extension/fr.json'
 
 // ---------------------------------------------------------------------------
 // TYPES
@@ -23,7 +25,9 @@ const LANGUAGES: Array<{ value: LanguageCode; label: string }> = [
   { value: 'ja', label: 'Japanese 日本語' },
   { value: 'zh-TW', label: 'Traditional Chinese 繁體中文' },
   { value: 'zh-CN', label: 'Simplified Chinese 简体中文' },
-  { value: 'ko', label: 'Korean 한국어' }
+  { value: 'ko', label: 'Korean 한국어' },
+  { value: 'th', label: 'Thai ไทย' },
+  { value: 'fr', label: 'French Français' }
 ]
 
 import { LOCALE_CACHE_KEY } from '../constants'
@@ -34,7 +38,9 @@ const EXTENSION_LOCALES: Record<Exclude<LanguageCode, 'off'>, Dictionary> = {
   ja: extJa,
   'zh-TW': extZhTw,
   'zh-CN': extZhCn,
-  ko: extKo
+  ko: extKo,
+  th: extTh,
+  fr: extFr
 }
 
 // English fallback strings (when a translation is missing or language is off)

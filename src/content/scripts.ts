@@ -2,6 +2,8 @@ import ja from '../locales/ja.json'
 import zhTw from '../locales/zh-TW.json'
 import zhCn from '../locales/zh-CN.json'
 import ko from '../locales/ko.json'
+import th from '../locales/th.json'
+import fr from '../locales/fr.json'
 import { injectDashboardFooter } from './injections'
 import type { LanguageCode, Dictionary } from '../types'
 
@@ -17,7 +19,9 @@ const BUNDLED_LANGUAGES: Record<Exclude<LanguageCode, 'off'>, Dictionary> = {
   ja,
   'zh-TW': zhTw,
   'zh-CN': zhCn,
-  ko
+  ko,
+  th,
+  fr
 }
 
 const DEFAULT_LANGUAGE: Exclude<LanguageCode, 'off'> = 'ja'

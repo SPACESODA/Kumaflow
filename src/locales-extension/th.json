@@ -1,0 +1,18 @@
+{
+    "footer_message": "การแปลอินเทอร์เฟซโดยส่วนขยาย Kumaflow คลิกที่ไอคอนเพื่อเปิด/ปิดได้ตลอดเวลา",
+    "footer_options": "ตัวเลือก",
+    "footer_join": "เข้าร่วมการแปล",
+    "options_title": "เลือกภาษา Webflow UI ของคุณ",
+    "options_description": "ส่วนขยายนี้แปลอินเทอร์เฟซของ Webflow Dashboard และ Designer เพื่อหลีกเลี่ยงความสับสนในศัพท์เทคนิค บางคำอาจไม่ได้รับการแปล",
+    "options_enable_label": "เปิดใช้งานการแปล",
+    "options_enable_desc": "ปิดตัวเลือกนี้เพื่อให้ Webflow เป็นภาษาอังกฤษ",
+    "options_status_idle": "เลือกภาษาที่คุณต้องการเห็นใน Webflow จะมีภาษาเพิ่มเติมเร็วๆ นี้!",
+    "options_strict_label": "หลีกเลี่ยงการแปลบางส่วน (แนะนำ)",
+    "options_strict_desc": "แปลเฉพาะเมื่อข้อความตรงกับวลีการแปลของเราเท่านั้น",
+    "options_cdn_label": "ใช้การแปลล่าสุด",
+    "options_cdn_desc": "ดึงการแปลล่าสุดจากชุมชนผ่าน CDN",
+    "options_refreshing_msg": "กำลังรีเฟรชแคช...",
+    "options_refresh_done_msg": "เสร็จสิ้น: โปรดรีโหลดหน้า Webflow",
+    "options_saved_msg": "บันทึกแล้ว",
+    "options_contribute": "มีส่วนร่วมบน GitHub"
+}
