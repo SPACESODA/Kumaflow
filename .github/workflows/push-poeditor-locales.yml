@@ -1,0 +1,33 @@
+name: Push locales to POEditor
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  push-locales:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: poeditor-upload
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Verify locales
+        run: node verify_json.mjs
+
+      - name: Push locales to POEditor (add/overwrite only)
+        run: node .github/scripts/upload-poeditor.mjs
+        env:
+          POEDITOR_API_TOKEN: ${{ secrets.POEDITOR_API_TOKEN }}
+          POEDITOR_PROJECT_ID: ${{ secrets.POEDITOR_PROJECT_ID }}
+          POEDITOR_LANGUAGES: ${{ vars.POEDITOR_LANGUAGES }}
+          POEDITOR_EXPORT_TYPE: key_value_json

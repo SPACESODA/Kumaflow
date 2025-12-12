@@ -37,49 +37,43 @@ const languageEntries = (languagesEnv || defaultLanguages)
     return { code, filePath };
   });
 
-async function exportLocale(code) {
-  const form = new URLSearchParams();
+async function uploadLocale(code, filePath) {
+  const resolved = path.resolve(process.cwd(), filePath);
+  const content = await fs.readFile(resolved, 'utf8');
+
+  // Validate JSON before upload
+  JSON.parse(content);
+
+  const form = new FormData();
   form.set('api_token', token);
   form.set('id', projectId);
   form.set('language', code);
+  form.set('overwrite', '1'); // add/update, no deletions
+  form.set('sync_terms', '0');
   form.set('type', exportType);
+  form.append('file', new Blob([content], { type: 'application/json' }), path.basename(filePath));
 
-  const response = await fetch('https://api.poeditor.com/v2/projects/export', {
+  const response = await fetch('https://api.poeditor.com/v2/projects/upload', {
     method: 'POST',
     body: form
   });
 
   if (!response.ok) {
-    throw new Error(`Export request failed for ${code}: HTTP ${response.status}`);
+    throw new Error(`Upload request failed for ${code}: HTTP ${response.status}`);
   }
 
   const data = await response.json();
-  if (data?.response?.status !== 'success' || !data?.result?.url) {
-    throw new Error(`Export API error for ${code}: ${JSON.stringify(data)}`);
+  if (data?.response?.status !== 'success') {
+    throw new Error(`Upload API error for ${code}: ${JSON.stringify(data)}`);
   }
-
-  return data.result.url;
-}
-
-async function downloadToFile(url, filePath) {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Download failed: HTTP ${response.status} for ${url}`);
-  }
-
-  const content = await response.text();
-  const resolved = path.resolve(process.cwd(), filePath);
-  await fs.mkdir(path.dirname(resolved), { recursive: true });
-  await fs.writeFile(resolved, content);
 }
 
 async function run() {
   for (const { code, filePath } of languageEntries) {
-    console.log(`Updating ${code} -> ${filePath}`);
-    const url = await exportLocale(code);
-    await downloadToFile(url, filePath);
+    console.log(`Uploading ${code} <- ${filePath}`);
+    await uploadLocale(code, filePath);
   }
-  console.log('Locales updated from POEditor.');
+  console.log('Locales uploaded to POEditor (add/overwrite only, no sync).');
 }
 
 run().catch((err) => {

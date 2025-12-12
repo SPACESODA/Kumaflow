@@ -37,7 +37,7 @@ const SKIP_TAGS = new Set([
   'OPTION'
 ])
 
-import { EXCLUDED_SELECTORS } from './exclusions'
+import { EXCLUDED_SELECTORS } from './exclusion-selectors'
 
 const IGNORE_PATTERN = EXCLUDED_SELECTORS.join(',')
 

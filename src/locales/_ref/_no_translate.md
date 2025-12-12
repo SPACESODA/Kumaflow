@@ -33,3 +33,6 @@ If these words are in the middle of a sentence, KEEP them as they are in ENGLISH
 - Webflow Cloud
 - Favicon / favicon
 - Webclip / webclip
+- Grid
+- Flex
+- Gap
