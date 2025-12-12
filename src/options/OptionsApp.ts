@@ -31,7 +31,6 @@ const LANGUAGES: Array<{ value: LanguageCode; label: string }> = [
 ]
 
 import { LOCALE_CACHE_KEY } from '../constants'
-// const LOCALE_CACHE_KEY = 'cdnLocaleCache'
 
 // Extension UI translations (used to localize the options page itself)
 const EXTENSION_LOCALES: Record<Exclude<LanguageCode, 'off'>, Dictionary> = {
