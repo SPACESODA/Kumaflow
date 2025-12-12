@@ -541,5 +541,6 @@
   "mos ago.": "",
   "mo ago.": "",
   "Webflow's Google Fonts integration requires the use of the Google Fonts API, which sends End User IP addresses to Google servers and may not be GDPR-compliant. To keep from sending End User IP addresses to Google Servers, we recommend downloading fonts from Google and uploading them as custom fonts.": "",
-  "GDPR compliance": ""
+  "GDPR compliance": "",
+  "Edit component": ""
 }
