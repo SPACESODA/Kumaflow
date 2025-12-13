@@ -4,7 +4,7 @@
         "description": "The name of the extension"
     },
     "appDescription": {
-        "message": "Traduisez le tableau de bord et l'interface Webflow en japonais, chinois, coréen et plus encore !",
+        "message": "Traduisez le tableau de bord et l'interface Webflow en français et plus encore !",
         "description": "The description of the extension"
     }
 }

@@ -4,7 +4,7 @@
         "description": "The name of the extension"
     },
     "appDescription": {
-        "message": "แปลหน้า Dashboard และ Designer ของ Webflow เป็นภาษาญี่ปุ่น, จีน, เกาหลี และอื่นๆ!",
+        "message": "แปลหน้า Dashboard และ Designer ของ Webflow เป็นภาษาไทยและอื่นๆ!",
         "description": "The description of the extension"
     }
 }
