@@ -275,8 +275,8 @@ function updateLocaleBadge(
     return
   }
 
-  // If we have manual refresh state and no entry (cache cleared), keep showing manual message?
-  // Use the standard logic for now, but click handler will override text content manually
+  // When a manual refresh clears the cache, the click handler keeps custom text while
+  // isManuallyRefreshing is true; once a new cache arrives this normal rendering runs again.
 
   // Otherwise show the fetched source or fall back to bundled
   if (!entry) {

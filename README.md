@@ -49,13 +49,13 @@ Latest locale JSON files via Cloudflare Pages / jsDelivr:
 
 Coming soon!
 
-### Method 2: Download and load unpacked - Stable version
+### Method 2: Download and load unpacked (Stable)
 
 1. Download the [installation zip](https://webflow-ui-localization.pages.dev/public/Kumaflow-unpacked-install.zip) and unzip it.
 2. Open `chrome://extensions` (Edge: `edge://extensions`), enable Developer Mode.
 3. Click "Load unpacked" and select the unzipped folder (it should contain `manifest.json` at the root).
 
-### Method 3: Build locally - Latest dev
+### Method 3: Build locally (Dev)
 
 1. Install dependencies and build: `npm install && npm run build`
 2. Open `chrome://extensions` (Edge: `edge://extensions`), enable Developer Mode.

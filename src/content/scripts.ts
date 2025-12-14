@@ -347,6 +347,7 @@ function applyReplacements(
 
 function translateTextNode(node: Text) {
   if (!isEnabled) return
+  if (shouldSkipTextNode(node)) return
   const { updated, changed } = applyReplacements(node.data, activeReplacements, activeExactReplacements)
   if (changed) {
     node.data = updated
