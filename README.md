@@ -35,13 +35,13 @@ The plan is to support Japanese, Traditional Chinese, Simplified Chinese, and Ko
 
 **Join to translate together on POEditor 🦜**
 
-Right now, adding accurate **terms** is the most important part of the project — so feel free to jump in and help! It’s easy to get started on POEditor:  
-https://poeditor.com/join/project/7drFUDh3dh
+Right now, adding accurate **terms** is the most important part of the project — so feel free to jump in and help!  
+POEditor project: https://poeditor.com/join/project/7drFUDh3dh
 
 Latest locale JSON files via Cloudflare Pages / jsDelivr:
 
 - [Cloudflare Pages](https://webflow-ui-localization.pages.dev/src/locales/)  
-- [jsDelivr](https://www.jsdelivr.com/package/gh/SPACESODA/Webflow-UI-Localization?tab=files&path=src%2Flocales)
+- [jsDelivr](https://www.jsdelivr.com/package/gh/SPACESODA/Kumaflow?tab=files&path=src%2Flocales)
 
 ## Installation
 
@@ -78,12 +78,9 @@ This extension does not collect, store, or transmit any personal information or 
 <br />
 <br />
 
-[![Powered by Extension.js][powered-image]][powered-url]
-
-<br />
-
 ---
 
+<br />
 <br />
 <br />
 
@@ -130,3 +127,7 @@ npm run dev -- --browser=edge
 # Firefox (not tested yet)
 npm run dev -- --browser=firefox
 ```
+
+<br />
+
+[![Powered by Extension.js][powered-image]][powered-url]

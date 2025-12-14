@@ -65,7 +65,7 @@ const IGNORE_PATTERN = EXCLUDED_SELECTORS.join(',')
 
 const LOCALE_PRIMARY_BASE = 'https://webflow-ui-localization.pages.dev/src/locales'
 const LOCALE_SECONDARY_BASE =
-  'https://cdn.jsdelivr.net/gh/SPACESODA/Webflow-UI-Localization@latest/src/locales'
+  'https://cdn.jsdelivr.net/gh/SPACESODA/Kumaflow@latest/src/locales'
 const LOCALE_CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours
 
 type CachedLocaleEntry = { dictionary: Dictionary; fetchedAt: number; source: 'primary' | 'secondary' }

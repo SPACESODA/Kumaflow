@@ -7,8 +7,8 @@ Read the following instructions carefully.
 
 Terminology alignment:
 
-- Strings refer to the original Webflow UI text. These correspond to JSON "keys", POEditor "terms", and "nodes" in the codebase.
-- Translations refer to the localized text. These correspond to JSON "values".
+- **Strings** refer to the original Webflow UI text. These correspond to JSON "keys", POEditor "terms", or "nodes" in the codebase.
+- **Translations** refer to the localized text. These correspond to JSON "values".
 
 General instructions:
 

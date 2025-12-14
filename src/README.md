@@ -1,28 +1,34 @@
 # Notes to Translation Contributors
 
-Translations are not managed directly in the repo.  
+Translations are NOT managed directly in this GitHub repo.  
 
 Please contribute on POEditor: 
 https://poeditor.com/join/project/7drFUDh3dh
 
 (There is a GitHub Action that pulls updated locale JSONs from POEditor a few times a day and commits automatically.)
 
+# Terminology
+
+- **Strings** refer to the original Webflow UI text. These correspond to JSON "keys", POEditor "terms", or "nodes" in the codebase.
+- **Translations** refer to the localized text. These correspond to JSON "values".
 
 # Adding New Terms to POEditor
 
 Found an untranslated word? Be a hero! 🦸‍♂️🦸‍♀️
 
-Translating Webflow UI is a big team effort. We need your help to find missing words. It is like a treasure hunt — by adding these words, you make Webflow easier to use for thousands of designers in your language.
+Translating Webflow UI is a big team effort. We need your help to find missing translations. It is like a treasure hunt — by adding new terms, you make Webflow easier to use for thousands of designers in your language.
 
-**Important:** Please only add terms that appear within the scope of this extension.
+**Important:** Please only add terms that appear within the scope of this extension:
 
-Webflow pages:
+Webflow pages
+
 - `https://webflow.com/dashboard*`
 - `https://webflow.com/login*`
 - `https://webflow.com/signup*`
 - `https://webflow.com/forgot*`
 
-Webflow Designer pages:
+Webflow Designer pages
+
 - `https://preview.webflow.com*`
 - `https://*.design.webflow.com*`
 
@@ -47,4 +53,5 @@ Use named tokens when the variable context is clear. These are robust and allow 
 
 # Terms Not to be Translated
 
-Please visit [`src/locales/_ref_ai/_no_translate.md`](https://github.com/SPACESODA/Webflow-UI-Localization/blob/main/src/locales/_ref/_no_translate.md) for the list.
+Please visit [this list](https://github.com/SPACESODA/Kumaflow/blob/main/src/locales/_ref/_no_translate.md).  
+`src/locales/_ref_ai/_no_translate.md`

@@ -182,7 +182,7 @@ function renderFullPage(root: HTMLElement, settings: Settings) {
         <p class="links">
             <a href="https://poeditor.com/join/project/7drFUDh3dh" target="_blank" rel="noreferrer">${getText(lang, 'footer_join')}</a>
             <span style="opacity: 0.6;">&#x2022;</span>
-            <a href="https://github.com/SPACESODA/Webflow-UI-Localization" target="_blank" rel="noreferrer">${getText(lang, 'options_contribute')}</a>
+            <a href="https://github.com/SPACESODA/Kumaflow" target="_blank" rel="noreferrer">${getText(lang, 'options_contribute')}</a>
         </p>
     </div>
     <p class="disclaimer" style="margin-bottom: 18px;">This extension provides unofficial translations that may not be accurate.</p>
