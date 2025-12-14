@@ -178,7 +178,7 @@ function renderFullPage(root: HTMLElement, settings: Settings) {
   footer.innerHTML = `
     <div class="footer_divider"></div>
     <div class="footer_meta">
-        <p class="credit">Made with &hearts; by <a href="https://x.com/anthonycxc" target="_blank" rel="noreferrer">Anthony C.</a></p>
+        <p class="credit">Made with &hearts; by <a href="https://x.com/anthonycxc" target="_blank" rel="noreferrer">Anthony C</a></p>
         <p class="links">
             <a href="https://poeditor.com/join/project/7drFUDh3dh" target="_blank" rel="noreferrer">${getText(lang, 'footer_join')}</a>
             <span style="opacity: 0.6;">&#x2022;</span>

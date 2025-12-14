@@ -2,11 +2,11 @@
   "private": true,
   "name": "webflow-ui-localization",
   "description": "Translate the Webflow Dashboard and Designer UI into Japanese, Chinese, Korean, and more!",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "license": "MIT",
   "type": "module",
   "author": {
-    "name": "Anthony C. <https://x.com/anthonycxc>",
+    "name": "Anthony C <https://x.com/anthonycxc>",
     "url": "https://x.com/anthonycxc"
   },
   "devDependencies": {

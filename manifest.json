@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/chrome-manifest.json",
   "manifest_version": 3,
-  "version": "0.5.2",
+  "version": "0.5.3",
   "default_locale": "en",
   "name": "__MSG_appName__",
   "description": "__MSG_appDescription__",
@@ -25,6 +25,7 @@
   "background": {
     "service_worker": "src/background.ts"
   },
+  "update_url": "https://example.com/updates/kumaflow/update.xml",
   "permissions": [
     "storage"
   ],

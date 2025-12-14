@@ -236,7 +236,7 @@ function getLocalizedStrings(currentLanguage: Exclude<LanguageCode, 'off'>, isEn
     const defaultMsg = 'Click the Kumaflow browser extension icon to enable / disable translations at any time.'
     const defaultOpt = 'Options'
     const defaultJoin = 'Join translations?'
-    const madeByText = 'Made with &hearts; by Anthony C.'
+    const madeByText = 'Made with &hearts; by Anthony C'
 
     const getString = (key: string, fallback: string) => {
         if (!isEnabled) return fallback

@@ -9,7 +9,7 @@
 
 # Kumaflow - Webflow UI Localization
 
-**Kumaflow** is an open-source browser extension that lets you translate the Webflow Dashboard pages and Designer UI into your language!
+**Kumaflow** is an open-source browser extension that lets you translate the [Webflow](https://try.webflow.com/s2) Dashboard pages and Designer UI into your language!
 
 🐻 **ウオォォォー！** Kuma works hard behind the scenes, seamlessly showing translated text across these Webflow surfaces — all powered by our matching engine:
 
@@ -31,7 +31,7 @@ Click the toolbar icon to toggle translations at any time. This acts as a master
 
 The plan is to support Japanese, Traditional Chinese, Simplified Chinese, and Korean first, with MORE languages to be added over time.
 
-### Contribute translations
+## Contribute Translations
 
 **Join to translate together on POEditor 🦜**
 
@@ -43,10 +43,29 @@ Latest locale JSON files via Cloudflare Pages / jsDelivr:
 - [Cloudflare Pages](https://webflow-ui-localization.pages.dev/src/locales/)  
 - [jsDelivr](https://www.jsdelivr.com/package/gh/SPACESODA/Webflow-UI-Localization?tab=files&path=src%2Flocales)
 
+## Installation
+
+### Method 1: Extension Marketplace
+
+Coming soon!
+
+### Method 2: Download and load unpacked - Stable version
+
+1. Download the [installation zip](https://webflow-ui-localization.pages.dev/public/Kumaflow-unpacked-install.zip) and unzip it.
+2. Open `chrome://extensions` (Edge: `edge://extensions`), enable Developer Mode.
+3. Click "Load unpacked" and select the unzipped folder (it should contain `manifest.json` at the root).
+
+### Method 3: Build locally - Latest dev
+
+1. Install dependencies and build: `npm install && npm run build`
+2. Open `chrome://extensions` (Edge: `edge://extensions`), enable Developer Mode.
+3. Click "Load unpacked" and select the `dist/chrome` folder in the repo.
+
+<br />
 <br />
 <br />
 
-Made with ♥ by [Anthony C.](https://x.com/anthonycxc)
+Made with ♥ by [Anthony C](https://x.com/anthonycxc)
 
 ---
 This extension provides unofficial translations that may not be accurate.
@@ -67,12 +86,6 @@ This extension does not collect, store, or transmit any personal information or 
 
 <br />
 <br />
-
-## Load the extension (unpacked)
-
-1) Install deps and build: `npm install && npm run build`
-2) Open `chrome://extensions` (Edge: `edge://extensions`), enable Developer Mode.
-3) Click “Load unpacked” and select the `dist` folder in this repo.
 
 ## Commands
 

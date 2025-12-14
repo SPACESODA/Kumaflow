@@ -15,3 +15,4 @@ Content updates:
 
 - `src/locales/index.html`: Add new language to the list.
 - `src/options/index.html`: Add translations.
+- `index.html`: Add new language to intro and meta tags.
