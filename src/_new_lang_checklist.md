@@ -1,4 +1,4 @@
-# Adding New Languages Checklist
+# Adding New Languages - Checklist
 
 To add a new language code (e.g. "fr"), update these files:
 
@@ -13,6 +13,6 @@ To add a new language code (e.g. "fr"), update these files:
 
 Content updates:
 
-- `src/locales/index.html`: Add new language to the list.
+- `src/locales/index.html`: Add new languages to the list.
 - `src/options/index.html`: Add translations.
-- `index.html`: Add new language to intro and meta tags.
+- `index.html`: Add new languages to intro and meta tags.

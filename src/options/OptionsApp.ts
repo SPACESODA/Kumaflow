@@ -73,12 +73,12 @@ const FALLBACK_STRINGS: Dictionary = {
 
 // Safely retrieve the storage area (Sync if available, otherwise Local)
 function getStorage(): chrome.storage.SyncStorageArea | chrome.storage.LocalStorageArea {
-  return chrome?.storage?.sync || chrome.storage.local
+  return chrome?.storage?.sync || chrome?.storage?.local
 }
 
 // Heavier cache reads should come from local when available
 function getCacheStorage(): chrome.storage.LocalStorageArea | chrome.storage.SyncStorageArea {
-  return chrome?.storage?.local || chrome.storage.sync
+  return chrome?.storage?.local || chrome?.storage?.sync
 }
 
 // Get a localized string for the Options UI (fallback to English)
@@ -225,7 +225,7 @@ function renderLanguageList(parent: HTMLElement) {
 function updateValues(root: HTMLElement, settings: Settings) {
   // Update Toggles
   const toggles = root.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')
-  toggles.forEach(box => {
+  toggles.forEach((box: HTMLInputElement) => {
     const key = box.name as keyof Settings
     if (key in settings) {
       box.checked = Boolean(settings[key])

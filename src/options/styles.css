@@ -1,4 +1,6 @@
 :root {
+  --theme-color: #146ef5;
+  --theme-shadow: rgba(20, 110, 245, 0.12);
   color-scheme: light;
   font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
   background: radial-gradient(circle at 10% 20%, #f7fbff, #e6f0ff 25%, #f8faff 50%);
@@ -137,7 +139,7 @@ a.json_badge {
 }
 
 .toggle input:checked+.toggle_track {
-  background: #146ef5;
+  background: var(--theme-color);
 }
 
 .toggle input:checked+.toggle_track .toggle_thumb {
@@ -178,8 +180,8 @@ form {
 }
 
 .language_option:hover {
-  border-color: #146ef5;
-  box-shadow: 0 10px 30px rgba(20, 110, 245, 0.12);
+  border-color: var(--theme-color);
+  box-shadow: 0 10px 30px var(--theme-shadow);
 }
 
 .language_option input {
@@ -245,7 +247,7 @@ form[data-disabled='true'] .language_option {
 }
 
 .credit a {
-  color: #146ef5;
+  color: var(--theme-color);
   text-decoration: none;
   font-weight: 600;
 }
@@ -265,7 +267,7 @@ form[data-disabled='true'] .language_option {
 }
 
 .links a {
-  color: #146ef5;
+  color: var(--theme-color);
   text-decoration: none;
   font-weight: 600;
 }
