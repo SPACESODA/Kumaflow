@@ -15,8 +15,9 @@ import th from '../locales/th.json'
 import fr from '../locales/fr.json'
 import { injectDashboardFooter } from './injections'
 import type { LanguageCode, Dictionary } from '../types'
-import { LOCALE_CACHE_KEY } from '../constants'
-import { EXCLUDED_SELECTORS } from './exclusion-selectors'
+import { LOCALE_CACHE_KEY, EXCLUDED_SELECTORS } from '../constants'
+// import { EXCLUDED_SELECTORS } from './exclusion-selectors' // Removed
+
 
 // ---------------------------------------------------------------------------
 // TYPES

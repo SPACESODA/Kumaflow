@@ -10,6 +10,7 @@ To add a new language code (e.g. "fr"), update these files:
 - `src/content/injections.ts`: Add new language options.
 - `.github/scripts/pull-poeditor.mjs`: Add 'fr' to the list for pulling from POEditor.
 - `_locales/fr/messages.json`: Create extension metadata (name/description) for Chrome Web Store.
+- `verify_json.mjs`: Add to the list of json files to verify.
 
 Content updates:
 

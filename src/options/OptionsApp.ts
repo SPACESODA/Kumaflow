@@ -5,7 +5,7 @@
 // It manages user settings and provides manual controls for clearing cache.
 
 import type { LanguageCode, Dictionary } from '../types'
-import { LOCALE_CACHE_KEY } from '../constants'
+import { LOCALE_CACHE_KEY, EXCLUDED_SELECTORS } from '../constants'
 
 // Extension UI Translations
 import extJa from '../locales-extension/ja.json'
@@ -14,7 +14,8 @@ import extZhCn from '../locales-extension/zh-CN.json'
 import extKo from '../locales-extension/ko.json'
 import extTh from '../locales-extension/th.json'
 import extFr from '../locales-extension/fr.json'
-import { EXCLUDED_SELECTORS } from '../content/exclusion-selectors'
+// import { EXCLUDED_SELECTORS } from '../content/exclusion-selectors' // Removed
+
 
 // ---------------------------------------------------------------------------
 // TYPES

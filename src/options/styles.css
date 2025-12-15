@@ -289,7 +289,7 @@ form[data-disabled='true'] .language_option {
 
 /* Advanced Settings */
 .advanced_toggle {
-    background: none;
+    background: transparent;
     border: none;
     padding: 0;
     margin: 24px 0 12px;
@@ -336,7 +336,7 @@ textarea.exclusion_input {
     padding: 12px;
     border-radius: 8px;
     border: 1px solid #cbd5e1;
-    font-family: monospace;
+    font-family: Consolas, Monaco, "Courier New", monospace;
     font-size: 13px;
     line-height: 1.5;
     resize: vertical;
@@ -382,7 +382,7 @@ textarea.exclusion_input:focus {
 }
 
 .reset_button {
-    background: none;
+    background: transparent;
     border: none;
     padding: 0;
     margin-left: 12px;

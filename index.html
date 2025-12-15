@@ -293,30 +293,30 @@
     const translations = [
       {
         head: "日本語で Webflow を体験しましょう！",
-        desc: "Kumaflow は Webflow のダッシュボードとデザイナー UI を日本語、繁体字・簡体字中国語、韓国語、フランス語、タイ語に翻訳します。"
+        desc: "Kumaflow は Webflow のダッシュボードとデザイナー UI を日本語、繁/簡体字中国語、韓国語、フランス語、タイ語に翻訳します。"
       },
       {
         head: "用中文体验 Webflow！",
-        desc: "Kumaflow 现已支持将 Webflow 仪表板和设计器界面翻译为日语、繁体与简体中文、韩语、法语和泰语。"
+        desc: "Kumaflow 能将 Webflow 仪表板和设计器界面翻译为日语、繁体与简体中文、韩语、法语和泰语。"
       },
       {
         head: "用中文體驗 Webflow！",
-        desc: "Kumaflow 現在支援將 Webflow 儀表板和設計器介面翻譯為日語、繁體與簡體中文、韓語、法語和泰語。"
+        desc: "Kumaflow 能將 Webflow 儀表板和設計器介面翻譯為日語、繁體與簡體中文、韓語、法語和泰語。"
       },
       {
         head: "한국어로 Webflow를 경험하세요!",
-        desc: "Kumaflow는 이제 Webflow 대시보드와 디자이너 UI를 일본어, 중국어(번체 및 간체), 한국어, 프랑스어, 태국어로 번역합니다."
+        desc: "Kumaflow는 Webflow 대시보드와 디자이너 UI를 일본어, 중국어(번체 및 간체), 한국어, 프랑스어, 태국어로 번역합니다."
       },
       {
         head: "Découvrez Webflow en français !",
-        desc: "Kumaflow traduit désormais l'interface du tableau de bord et du concepteur Webflow en japonais, chinois traditionnel et simplifié, coréen, français et thaï."
+        desc: "Kumaflow traduit l'interface du tableau de bord et du concepteur Webflow en japonais, chinois traditionnel et simplifié, coréen, français et thaï."
       },
       {
         head: "สัมผัสประสบการณ์ Webflow ในภาษาไทย!",
-        desc: "ตอนนี้ Kumaflow แปลหน้า Dashboard และ Designer ของ Webflow เป็นภาษาญี่ปุ่น จีน (ตัวเต็มและตัวย่อ) เกาหลี ฝรั่งเศส และไทย"
+        desc: "Kumaflow แปลหน้า Dashboard และ Designer ของ Webflow เป็นภาษาญี่ปุ่น จีน (ตัวเต็มและตัวย่อ) เกาหลี ฝรั่งเศส และไทย"
       }
     ];
-    let currentIndex = 0;
+    let currentIndex = -1;
     const introText = document.getElementById('intro-text');
     function rotateText() {
       introText.classList.add('fade-out');
