@@ -554,5 +554,11 @@
   "See all updates": "",
   "Enable custom code?": "",
   "Installed libraries": "",
-  "Add large breakpoints": ""
+  "Add large breakpoints": "",
+  "instance": "",
+  "{*} instance": "",
+  "instances": "",
+  "{*} instances": "",
+  "Private staging is only available on Enterprise plans. Please contact": "",
+  "Edit Alt Text": ""
 }
