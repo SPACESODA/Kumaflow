@@ -14,5 +14,12 @@
     "options_refreshing_msg": "캐시 재설정 중...",
     "options_refresh_done_msg": "캐시 재설정 완료, Webflow 페이지를 새로고침하세요",
     "options_saved_msg": "저장됨",
-    "options_contribute": "GitHub에서 개선하기"
+    "options_contribute": "GitHub에서 기여하기",
+    "options_advanced_toggle": "고급 설정",
+    "options_advanced_label": "제외할 Selectors",
+    "options_advanced_desc": "이 Selectors 와 일치하는 모든 요소는 번역되지 않고 건너뜁니다. 한 줄에 하나의 Selector 를 입력하세요.",
+    "options_advanced_save": "제외 목록 저장",
+    "options_advanced_saved": "저장됨!",
+    "options_advanced_reset": "기본값으로 재설정",
+    "options_advanced_reset_confirm": "기본값으로 재설정하시겠습니까?"
 }

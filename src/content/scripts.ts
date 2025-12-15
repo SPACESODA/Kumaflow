@@ -28,7 +28,13 @@ type Replacement = {
   marker?: string
 }
 
-type Settings = { language: LanguageCode; enabled: boolean; strictMatching: boolean; useCdn: boolean }
+type Settings = { 
+  language: LanguageCode; 
+  enabled: boolean; 
+  strictMatching: boolean; 
+  useCdn: boolean;
+  exclusionSelectors: string[];
+}
 
 // ---------------------------------------------------------------------------
 // CONSTANTS
@@ -44,7 +50,13 @@ const BUNDLED_LANGUAGES: Record<Exclude<LanguageCode, 'off'>, Dictionary> = {
 }
 
 const DEFAULT_LANGUAGE: Exclude<LanguageCode, 'off'> = 'ja'
-const DEFAULT_SETTINGS: Settings = { language: DEFAULT_LANGUAGE, enabled: true, strictMatching: true, useCdn: true }
+const DEFAULT_SETTINGS: Settings = { 
+  language: DEFAULT_LANGUAGE, 
+  enabled: true, 
+  strictMatching: true, 
+  useCdn: true,
+  exclusionSelectors: EXCLUDED_SELECTORS
+}
 const FLEXIBLE_STRICT_WHITESPACE = true
 const initialDocumentLang = document.documentElement?.getAttribute('lang') || 'en'
 
@@ -61,7 +73,7 @@ const SKIP_TAGS = new Set([
   'OPTION'
 ])
 
-const IGNORE_PATTERN = EXCLUDED_SELECTORS.join(',')
+// IGNORE_PATTERN is now dynamic based on settings.exclusionSelectors
 
 const LOCALE_PRIMARY_BASE = 'https://webflow-ui-localization.pages.dev/src/locales'
 const LOCALE_SECONDARY_BASE =
@@ -417,7 +429,19 @@ function shouldSkipTextNode(textNode: Text) {
   if (!parent) return true
   if (SKIP_TAGS.has(parent.tagName)) return true
   if (parent.isContentEditable) return true
-  if (IGNORE_PATTERN && IGNORE_PATTERN.trim() && parent.closest(IGNORE_PATTERN)) return true
+  
+  // Dynamic Exclusion Check
+  const effectiveSelectors = latestSettings.exclusionSelectors || EXCLUDED_SELECTORS
+  if (effectiveSelectors.length > 0) {
+    try {
+      const pattern = effectiveSelectors.join(',')
+      if (pattern.trim() && parent.closest(pattern)) return true
+    } catch (e) {
+      // invalid selector in user input might throw, ignore it to prevent crash
+      // console.warn('Invalid selector in exclusion list', e)
+    }
+  }
+
   if (!textNode.textContent?.trim()) return true
   return false
 }
@@ -642,7 +666,9 @@ function getSavedSettings(): Promise<Settings> {
           : DEFAULT_SETTINGS.strictMatching
       const useCdn =
         typeof result.useCdn === 'boolean' ? result.useCdn : DEFAULT_SETTINGS.useCdn
-      resolve({ language, enabled, strictMatching: strict, useCdn })
+      const exclusionSelectors =
+        Array.isArray(result.exclusionSelectors) ? result.exclusionSelectors : DEFAULT_SETTINGS.exclusionSelectors
+      resolve({ language, enabled, strictMatching: strict, useCdn, exclusionSelectors })
     })
   })
 }
@@ -855,23 +881,38 @@ function listenForSettingsChanges() {
       !changes.language &&
       typeof changes.enabled === 'undefined' &&
       typeof changes.strictMatching === 'undefined' &&
-      typeof changes.useCdn === 'undefined'
+      typeof changes.useCdn === 'undefined' &&
+      typeof changes.exclusionSelectors === 'undefined'
     )
       return
 
-    const language = (changes.language?.newValue as LanguageCode) ?? currentLanguage
-    const enabled =
-      typeof changes.enabled?.newValue === 'boolean' ? changes.enabled.newValue : isEnabled
-    const strict =
-      typeof changes.strictMatching?.newValue === 'boolean'
-        ? changes.strictMatching.newValue
-        : strictMatching
-    const useCdn =
-      typeof changes.useCdn?.newValue === 'boolean'
-        ? changes.useCdn.newValue
-        : latestSettings.useCdn
+    let hasChange = false
+    const newSettings: Settings = { ...latestSettings }
 
-    applySettings({ language, enabled, strictMatching: strict, useCdn })
+    if (changes.language) {
+      newSettings.language = changes.language.newValue as LanguageCode
+      hasChange = true
+    }
+    if (changes.enabled) {
+      newSettings.enabled = changes.enabled.newValue as boolean
+      hasChange = true
+    }
+    if (changes.strictMatching) {
+      newSettings.strictMatching = changes.strictMatching.newValue
+      hasChange = true
+    }
+    if (changes.useCdn) {
+      newSettings.useCdn = changes.useCdn.newValue
+      hasChange = true
+    }
+    if (changes.exclusionSelectors) {
+      newSettings.exclusionSelectors = changes.exclusionSelectors.newValue
+      hasChange = true
+    }
+
+    if (hasChange) {
+      applySettings(newSettings)
+    }
   })
 }
 

@@ -14,12 +14,19 @@ import extZhCn from '../locales-extension/zh-CN.json'
 import extKo from '../locales-extension/ko.json'
 import extTh from '../locales-extension/th.json'
 import extFr from '../locales-extension/fr.json'
+import { EXCLUDED_SELECTORS } from '../content/exclusion-selectors'
 
 // ---------------------------------------------------------------------------
 // TYPES
 // ---------------------------------------------------------------------------
 
-type Settings = { language: LanguageCode; enabled: boolean; strictMatching: boolean; useCdn: boolean }
+type Settings = { 
+  language: LanguageCode; 
+  enabled: boolean; 
+  strictMatching: boolean; 
+  useCdn: boolean;
+  exclusionSelectors: string[];
+}
 type LocaleMeta = { source: 'primary' | 'secondary' | 'bundled'; fetchedAt?: number }
 
 // ---------------------------------------------------------------------------
@@ -27,7 +34,13 @@ type LocaleMeta = { source: 'primary' | 'secondary' | 'bundled'; fetchedAt?: num
 // ---------------------------------------------------------------------------
 
 const DEFAULT_LANGUAGE: LanguageCode = 'ja'
-const DEFAULT_SETTINGS: Settings = { language: DEFAULT_LANGUAGE, enabled: true, strictMatching: true, useCdn: true }
+const DEFAULT_SETTINGS: Settings = { 
+  language: DEFAULT_LANGUAGE, 
+  enabled: true, 
+  strictMatching: true, 
+  useCdn: true,
+  exclusionSelectors: EXCLUDED_SELECTORS
+}
 
 // Supported languages for the options UI (English + native label for clarity)
 const LANGUAGES: Array<{ value: LanguageCode; label: string }> = [
@@ -64,7 +77,14 @@ const FALLBACK_STRINGS: Dictionary = {
   options_refresh_done_msg: 'Done: Please reload Webflow pages.',
   options_saved_msg: 'Saved',
   options_contribute: 'Contribute on GitHub',
-  footer_join: 'Join translations'
+  footer_join: 'Join translations',
+  options_advanced_toggle: 'Advanced Settings',
+  options_advanced_label: 'Excluded Selectors',
+  options_advanced_desc: 'Any elements that match these selectors will be skipped and not translated. One selector per line.',
+  options_advanced_save: 'Save Exclusions',
+  options_advanced_saved: 'Saved!',
+  options_advanced_reset: 'Reset to default',
+  options_advanced_reset_confirm: 'Confirm reset to default?'
 }
 
 // ---------------------------------------------------------------------------
@@ -76,7 +96,8 @@ function getStorage(): chrome.storage.SyncStorageArea | chrome.storage.LocalStor
   return chrome?.storage?.sync || chrome?.storage?.local
 }
 
-// Heavier cache reads should come from local when available
+// Heavier cache reads (like the large translation map) should come from 'local' storage
+// when available to avoid hitting 'sync' storage quotas and latency.
 function getCacheStorage(): chrome.storage.LocalStorageArea | chrome.storage.SyncStorageArea {
   return chrome?.storage?.local || chrome?.storage?.sync
 }
@@ -96,7 +117,8 @@ function getText(lang: LanguageCode, key: string): string {
 let lastRenderedLanguage: LanguageCode | null = null
 // Holds the current application state
 let currentSettings: Settings = { ...DEFAULT_SETTINGS }
-// Latest locale source metadata (per language)
+// Latest locale source metadata (per language).
+// This tells us if we are using the bundled JSON or a fresher version from CDN.
 let latestLocaleMeta: Record<Exclude<LanguageCode, 'off'>, LocaleMeta> | null = null
 // Track if a manual refresh is in progress to prevent UI flickering
 let isManuallyRefreshing = false
@@ -111,17 +133,20 @@ function renderApp(settings: Settings) {
   const root = document.getElementById('root')
   if (!root) return
 
-  // Full re-render needed if language changed (to update UI text)
+  // Full re-render needed if language changed (to update UI text).
+  // We must re-bind events because the DOM nodes are replaced.
   if (lastRenderedLanguage !== settings.language) {
     lastRenderedLanguage = settings.language
     renderFullPage(root, settings)
-    bindEvents(root) // Re-bind events after DOM changes
+    bindEvents(root)
   }
 
   // Always update input states (checked/disabled) to match settings
   updateValues(root, settings)
 
-  // Only update badge if not in the middle of a manual refresh result
+  // Only update badge if not in the middle of a manual refresh result.
+  // This prevents the "Done" message from being immediately overwritten by "Bundled"
+  // before the user has a chance to see it.
   if (!isManuallyRefreshing) {
     updateLocaleBadge(root, latestLocaleMeta, settings)
   }
@@ -148,7 +173,7 @@ function renderFullPage(root: HTMLElement, settings: Settings) {
   container.className = 'options_card'
   root.querySelector('.options_shell')?.appendChild(container)
 
-  // Enable toggle
+
   const localizedLabel = getText(lang, 'options_enable_label')
   const englishLabel = FALLBACK_STRINGS['options_enable_label']
   const displayLabel = localizedLabel === englishLabel
@@ -157,21 +182,21 @@ function renderFullPage(root: HTMLElement, settings: Settings) {
 
   renderToggleItem(container, 'enabled', displayLabel, getText(lang, 'options_enable_desc'))
 
-  // Status Message
+
   const status = document.createElement('p')
   status.className = 'status'
   status.id = 'status_msg'
   status.textContent = getText(lang, 'options_status_idle')
   container.appendChild(status)
 
-  // Language radio list
+
   renderLanguageList(container)
 
-  // Other toggles
   renderToggleItem(container, 'strictMatching', getText(lang, 'options_strict_label'), getText(lang, 'options_strict_desc'))
   renderToggleItem(container, 'useCdn', getText(lang, 'options_cdn_label'), getText(lang, 'options_cdn_desc'))
 
-  // Footer
+  renderAdvancedSection(container, settings)
+
   const footer = document.createElement('div')
   footer.className = 'footer'
 
@@ -204,7 +229,42 @@ function renderToggleItem(parent: HTMLElement, name: string, title: string, desc
   parent.appendChild(label)
 }
 
-// Render the list of language radio buttons
+// Render Advanced Section
+function renderAdvancedSection(parent: HTMLElement, settings: Settings) {
+  const lang = settings.language
+  const wrapper = document.createElement('div')
+  
+  wrapper.innerHTML = `
+    <button type="button" class="advanced_toggle">
+      <span>▶</span> ${getText(lang, 'options_advanced_toggle')}
+    </button>
+    
+    <div class="advanced_section" id="advanced_panel">
+      <label class="advanced_label">${getText(lang, 'options_advanced_label')}</label>
+      <p class="advanced_desc">
+        ${getText(lang, 'options_advanced_desc')}
+      </p>
+      
+      <textarea class="exclusion_input" spellcheck="false" placeholder=".my-class\n#my-id\n[data-my-attr=&quot;my-value&quot;]"></textarea>
+      
+      <div style="display: flex; align-items: center;">
+        <button type="button" class="save_button">${getText(lang, 'options_advanced_save')}</button>
+        <button type="button" class="reset_button">${getText(lang, 'options_advanced_reset')}</button>
+        <span class="save_status">${getText(lang, 'options_advanced_saved')}</span>
+      </div>
+    </div>
+  `
+  
+  parent.appendChild(wrapper)
+  
+  // Set initial value
+  const textarea = wrapper.querySelector('textarea')
+  if (textarea) {
+    textarea.value = (settings.exclusionSelectors || EXCLUDED_SELECTORS).join('\n')
+  }
+}
+
+// Render a checkbox toggle row
 function renderLanguageList(parent: HTMLElement) {
   const form = document.createElement('form')
   form.id = 'language-form'
@@ -315,7 +375,8 @@ function bindEvents(root: HTMLElement) {
       const key = target.name
       const val = target.checked
 
-      // Optimistic UI update for 'enabled' toggle
+      // Optimistic UI update: Toggle the switch visually immediately.
+      // The actual storage save happens asynchronously below.
       if (key === 'enabled') {
         updateValues(root, { ...currentSettings, enabled: val })
       }
@@ -364,6 +425,69 @@ function bindEvents(root: HTMLElement) {
       el.textContent = getText(currentSettings.language, 'options_refresh_done_msg')
     })
   })
+
+  // Advanced Toggle Handler
+  const advToggle = root.querySelector('.advanced_toggle')
+  if (advToggle) {
+    advToggle.addEventListener('click', () => {
+      const panel = root.querySelector('#advanced_panel') as HTMLElement
+      const arrow = advToggle.querySelector('span')
+      const isOpen = panel.getAttribute('data-open') === 'true'
+      
+      panel.setAttribute('data-open', (!isOpen).toString())
+      if (arrow) arrow.textContent = isOpen ? '▶' : '▼'
+    })
+  }
+
+  // Advanced Save Handler
+  const saveBtn = root.querySelector('.save_button')
+  if (saveBtn) {
+    saveBtn.addEventListener('click', () => {
+      const textarea = root.querySelector('.exclusion_input') as HTMLTextAreaElement
+      const status = root.querySelector('.save_status') as HTMLElement
+      
+      const raw = textarea.value
+      const lines = raw.split('\n').map(s => s.trim()).filter(Boolean)
+      
+      // Save
+      storage.set({ exclusionSelectors: lines }, () => {
+        // Show saved status
+        if (status) {
+          status.classList.add('visible')
+          setTimeout(() => status.classList.remove('visible'), 2000)
+        }
+        // Update local state
+        currentSettings.exclusionSelectors = lines
+      })
+    })
+  }
+
+  // Advanced Reset Handler
+  const resetBtn = root.querySelector('.reset_button')
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      if (!confirm(getText(currentSettings.language, 'options_advanced_reset_confirm'))) return
+
+      const textarea = root.querySelector('.exclusion_input') as HTMLTextAreaElement
+      const status = root.querySelector('.save_status') as HTMLElement
+      
+      const defaults = EXCLUDED_SELECTORS
+      
+      // Save
+      storage.set({ exclusionSelectors: defaults }, () => {
+        // Update UI
+        if (textarea) textarea.value = defaults.join('\n')
+        
+        // Show status (maybe different message? re-using Saved is fine)
+        if (status) {
+          status.classList.add('visible')
+          setTimeout(() => status.classList.remove('visible'), 2000)
+        }
+        // Update local state
+        currentSettings.exclusionSelectors = defaults
+      })
+    })
+  }
 }
 
 function setStatusMsg(root: HTMLElement, msg: string) {
@@ -389,7 +513,8 @@ export default function initOptionsPage() {
   const storage = getStorage()
   const cacheStorage = getCacheStorage()
 
-  // 1. Initial Load: Get settings and cache meta from storage
+  // 1. Initial Load: Get settings and cache meta from storage.
+  // We fetch both user settings (sync/local) and the translation cache metadata (local).
   storage.get({ ...DEFAULT_SETTINGS }, (items) => {
     cacheStorage.get({ [LOCALE_CACHE_KEY]: null }, (cacheItems) => {
       latestLocaleMeta = extractLocaleMeta((cacheItems as any)[LOCALE_CACHE_KEY])
@@ -424,8 +549,14 @@ export default function initOptionsPage() {
       newSettings.useCdn = changes.useCdn.newValue
       hasChange = true
     }
+    if (changes.exclusionSelectors) {
+      newSettings.exclusionSelectors = changes.exclusionSelectors.newValue
+      // Re-render to keep the textarea in sync if changed externally
+      hasChange = true
+    }
 
-    // Check for cache updates (fetched by content scripts)
+    // Check for cache updates (usually fetched by content scripts in the background).
+    // The options page listens for this to update the "JSON: Cloudflare" badge.
     if (changes[LOCALE_CACHE_KEY]) {
       const newValue = changes[LOCALE_CACHE_KEY].newValue
       latestLocaleMeta = extractLocaleMeta(newValue)

@@ -14,5 +14,12 @@
     "options_refreshing_msg": "重置快取中...",
     "options_refresh_done_msg": "快取完成重置，請重新載入 Webflow 頁面",
     "options_saved_msg": "已儲存",
-    "options_contribute": "去 GitHub 抓蟲"
+    "options_contribute": "在 GitHub 上貢獻",
+    "options_advanced_toggle": "進階設定",
+    "options_advanced_label": "排除的 Selectors",
+    "options_advanced_desc": "任何符合這些 Selectors 的元素都將被略過且不被翻譯。每行一個 Selector。",
+    "options_advanced_save": "儲存排除項目",
+    "options_advanced_saved": "已儲存！",
+    "options_advanced_reset": "恢復預設",
+    "options_advanced_reset_confirm": "確認恢復預設？"
 }
