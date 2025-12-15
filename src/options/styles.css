@@ -222,7 +222,7 @@ form[data-disabled='true'] .language_option {
 }
 
 .footer {
-  margin-top: 24px;
+  margin-top: 30px;
   padding-top: 12px;
 }
 
@@ -285,4 +285,114 @@ form[data-disabled='true'] .language_option {
 
 .disclaimer:not(:first-of-type) {
   margin-top: 6px;
+}
+
+/* Advanced Settings */
+.advanced_toggle {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 24px 0 12px;
+    font-size: 14px;
+    color: #64748b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.advanced_toggle:hover {
+    color: var(--theme-color);
+}
+
+.advanced_section {
+    display: none;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.advanced_section[data-open="true"] {
+    display: block;
+}
+
+.advanced_label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #334155;
+}
+
+.advanced_desc {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 12px;
+}
+
+textarea.exclusion_input {
+    width: 100%;
+    min-height: 120px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    font-family: monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    resize: vertical;
+    margin-bottom: 12px;
+}
+
+textarea.exclusion_input:focus {
+    outline: none;
+    border-color: var(--theme-color);
+    box-shadow: 0 0 0 3px var(--theme-shadow);
+}
+
+.save_button {
+    background: var(--theme-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.save_button:hover {
+    filter: brightness(110%);
+}
+
+.save_button:active {
+    filter: brightness(95%);
+}
+
+.save_status {
+    margin-left: 12px;
+    font-size: 13px;
+    color: #16a34a;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.save_status.visible {
+    opacity: 1;
+}
+
+.reset_button {
+    background: none;
+    border: none;
+    padding: 0;
+    margin-left: 12px;
+    font-size: 13px;
+    color: #94a3b8;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.reset_button:hover {
+    color: #64748b;
 }

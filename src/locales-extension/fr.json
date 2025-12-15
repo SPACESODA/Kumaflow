@@ -14,5 +14,12 @@
     "options_refreshing_msg": "Actualisation du cache...",
     "options_refresh_done_msg": "Terminé : Veuillez recharger les pages Webflow.",
     "options_saved_msg": "Enregistré",
-    "options_contribute": "Contribuer sur GitHub"
+    "options_contribute": "Contribuer sur GitHub",
+    "options_advanced_toggle": "Paramètres avancés",
+    "options_advanced_label": "Selectors exclus",
+    "options_advanced_desc": "Tout élément correspondant à ces Selectors sera ignoré et ne sera pas traduit. Un Selector par ligne.",
+    "options_advanced_save": "Enregistrer les exclusions",
+    "options_advanced_saved": "Enregistré !",
+    "options_advanced_reset": "Rétablir par défaut",
+    "options_advanced_reset_confirm": "Confirmer la réinitialisation par défaut ?"
 }

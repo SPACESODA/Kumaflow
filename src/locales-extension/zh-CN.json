@@ -14,5 +14,12 @@
     "options_refreshing_msg": "正在刷新缓存...",
     "options_refresh_done_msg": "缓存刷新完成，请刷新 Webflow 页面",
     "options_saved_msg": "已保存",
-    "options_contribute": "去 GitHub 抓虫"
+    "options_contribute": "在 GitHub 上贡献",
+    "options_advanced_toggle": "高级设置",
+    "options_advanced_label": "排除的 Selectors",
+    "options_advanced_desc": "任何匹配这些 Selectors 的元素都将被跳过且不被翻译。每行一个 Selector。",
+    "options_advanced_save": "保存排除项",
+    "options_advanced_saved": "已保存！",
+    "options_advanced_reset": "恢复默认",
+    "options_advanced_reset_confirm": "确认恢复默认？"
 }

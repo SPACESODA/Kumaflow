@@ -14,5 +14,12 @@
     "options_refreshing_msg": "กำลังรีเฟรชแคช...",
     "options_refresh_done_msg": "เสร็จสิ้น: โปรดรีโหลดหน้า Webflow",
     "options_saved_msg": "บันทึกแล้ว",
-    "options_contribute": "มีส่วนร่วมบน GitHub"
+    "options_contribute": "มีส่วนร่วมใน GitHub",
+    "options_advanced_toggle": "การตั้งค่าขั้นสูง",
+    "options_advanced_label": "Selectors ที่ถูกยกเว้น",
+    "options_advanced_desc": "องค์ประกอบใดๆ ที่ตรงกับ Selectors เหล่านี้จะถูกข้ามและไม่ถูกแปล หนึ่ง Selector ต่อบรรทัด",
+    "options_advanced_save": "บันทึกการยกเว้น",
+    "options_advanced_saved": "บันทึกแล้ว!",
+    "options_advanced_reset": "รีเซ็ตเป็นค่าเริ่มต้น",
+    "options_advanced_reset_confirm": "ยืนยันการรีเซ็ตเป็นค่าเริ่มต้นหรือไม่?"
 }

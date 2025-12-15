@@ -14,5 +14,12 @@
     "options_refreshing_msg": "キャッシュをリセット中...",
     "options_refresh_done_msg": "キャッシュのリセットが完了、Webflow を再読み込みしてください",
     "options_saved_msg": "保存しました",
-    "options_contribute": "GitHub で改善する"
+    "options_contribute": "GitHub で改善する",
+    "options_advanced_toggle": "詳細設定",
+    "options_advanced_label": "除外 Selectors",
+    "options_advanced_desc": "これらの Selectors に一致する要素は翻訳されません。1行に1つの Selector を入力してください。",
+    "options_advanced_save": "除外設定を保存",
+    "options_advanced_saved": "保存しました！",
+    "options_advanced_reset": "デフォルトに戻す",
+    "options_advanced_reset_confirm": "デフォルトに戻してもよろしいですか？"
 }
