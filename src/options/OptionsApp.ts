@@ -516,6 +516,13 @@ function bindEvents(root: HTMLElement) {
     let resetConfirming = false
     let resetConfirmTimeout: ReturnType<typeof setTimeout> | undefined
 
+    // Clean up the timeout if the page is unloaded, to prevent memory leaks
+    window.addEventListener('beforeunload', () => {
+      if (resetConfirmTimeout) {
+        clearTimeout(resetConfirmTimeout)
+        resetConfirmTimeout = undefined
+      }
+    });
     const defaultResetLabel = getText(currentSettings.language, 'options_advanced_reset')
     const confirmResetLabel = getText(currentSettings.language, 'options_advanced_reset_confirm')
 
