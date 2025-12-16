@@ -1,6 +1,8 @@
 :root {
   --theme-color: #146ef5;
   --theme-shadow: rgba(20, 110, 245, 0.12);
+  --theme-color-yellow: #eecf34;
+  --theme-shadow-yellow: rgba(238, 207, 52, 0.12);
   color-scheme: light;
   font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
   background: radial-gradient(circle at 10% 20%, #f7fbff, #e6f0ff 25%, #f8faff 50%);
@@ -146,6 +148,10 @@ a.json_badge {
   transform: translateX(20px);
 }
 
+.toggle_grabMode input:checked+.toggle_track {
+  background: var(--theme-color-yellow);
+}
+
 .toggle_text {
   display: flex;
   flex-direction: column;
@@ -289,110 +295,118 @@ form[data-disabled='true'] .language_option {
 
 /* Advanced Settings */
 .advanced_toggle {
-    background: transparent;
-    border: none;
-    padding: 0;
-    margin: 24px 0 12px;
-    font-size: 14px;
-    color: #64748b;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 24px 0 12px;
+  font-size: 14px;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .advanced_toggle:hover {
-    color: var(--theme-color);
+  color: var(--theme-color);
 }
 
 .advanced_section {
-    display: none;
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid #e2e8f0;
+  display: none;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
 }
 
 .advanced_section[data-open="true"] {
-    display: block;
+  display: block;
 }
 
 .advanced_label {
-    display: block;
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: #334155;
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #334155;
 }
 
 .advanced_desc {
-    font-size: 13px;
-    color: #64748b;
-    margin-bottom: 12px;
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 12px;
 }
 
 textarea.exclusion_input {
-    width: 100%;
-    min-height: 120px;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #cbd5e1;
-    font-family: Consolas, Monaco, "Courier New", monospace;
-    font-size: 13px;
-    line-height: 1.5;
-    resize: vertical;
-    margin-bottom: 12px;
+  width: 100%;
+  min-height: 120px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+  margin-bottom: 12px;
 }
 
 textarea.exclusion_input:focus {
-    outline: none;
-    border-color: var(--theme-color);
-    box-shadow: 0 0 0 3px var(--theme-shadow);
+  outline: none;
+  border-color: var(--theme-color);
+  box-shadow: 0 0 0 3px var(--theme-shadow);
 }
 
 .save_button {
-    background: var(--theme-color);
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
+  background: var(--theme-color);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
 .save_button:hover {
-    filter: brightness(110%);
+  filter: brightness(110%);
 }
 
 .save_button:active {
-    filter: brightness(95%);
+  filter: brightness(95%);
 }
 
 .save_status {
-    margin-left: 12px;
-    font-size: 13px;
-    color: #16a34a;
-    opacity: 0;
-    transition: opacity 0.3s;
+  margin-left: 12px;
+  font-size: 13px;
+  color: #16a34a;
+  opacity: 0;
+  transition: opacity 0.3s;
 }
 
 .save_status.visible {
-    opacity: 1;
+  opacity: 1;
 }
 
 .reset_button {
-    background: transparent;
-    border: none;
-    padding: 0;
-    margin-left: 12px;
-    font-size: 13px;
-    color: #94a3b8;
-    cursor: pointer;
-    text-decoration: none;
-    transition: color 0.2s;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin-left: 12px;
+  font-size: 13px;
+  color: #94a3b8;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.2s;
 }
 
 .reset_button:hover {
-    color: #64748b;
+  color: #64748b;
+}
+
+.reset_button[data-confirming='true'] {
+  color: #e85c5c;
+}
+
+.reset_button[data-confirming='true']:hover {
+  color: #d64d4d;
 }

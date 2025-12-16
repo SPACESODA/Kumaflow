@@ -16,6 +16,7 @@ import fr from '../locales/fr.json'
 import { injectDashboardFooter } from './injections'
 import type { LanguageCode, Dictionary } from '../types'
 import { LOCALE_CACHE_KEY, EXCLUDED_SELECTORS } from '../constants'
+import { enableGrabMode, disableGrabMode } from './text-grabber/core'
 // import { EXCLUDED_SELECTORS } from './exclusion-selectors' // Removed
 
 
@@ -29,12 +30,14 @@ type Replacement = {
   marker?: string
 }
 
-type Settings = { 
-  language: LanguageCode; 
-  enabled: boolean; 
-  strictMatching: boolean; 
+type Settings = {
+  language: LanguageCode;
+  enabled: boolean;
+  strictMatching: boolean;
   useCdn: boolean;
   exclusionSelectors: string[];
+  grabMode: boolean;
+  // 1. Language Change or Enable/Disablean;
 }
 
 // ---------------------------------------------------------------------------
@@ -51,13 +54,35 @@ const BUNDLED_LANGUAGES: Record<Exclude<LanguageCode, 'off'>, Dictionary> = {
 }
 
 const DEFAULT_LANGUAGE: Exclude<LanguageCode, 'off'> = 'ja'
-const DEFAULT_SETTINGS: Settings = { 
-  language: DEFAULT_LANGUAGE, 
-  enabled: true, 
-  strictMatching: true, 
-  useCdn: true,
-  exclusionSelectors: EXCLUDED_SELECTORS
+
+function getDefaultExclusionSelectors(): string[] {
+  return [...EXCLUDED_SELECTORS]
 }
+
+function resolveExclusionSelectors(value: unknown): string[] {
+  return Array.isArray(value) ? value : getDefaultExclusionSelectors()
+}
+
+function normalizeSettings(raw: Partial<Settings>): Settings {
+  const resolvedExclusions = resolveExclusionSelectors(raw.exclusionSelectors)
+  return {
+    language: (raw.language as LanguageCode) ?? DEFAULT_LANGUAGE,
+    enabled: typeof raw.enabled === 'boolean' ? raw.enabled : true,
+    strictMatching: typeof raw.strictMatching === 'boolean' ? raw.strictMatching : true,
+    useCdn: typeof raw.useCdn === 'boolean' ? raw.useCdn : true,
+    exclusionSelectors: resolvedExclusions,
+    grabMode: typeof raw.grabMode === 'boolean' ? raw.grabMode : false
+  }
+}
+
+const DEFAULT_SETTINGS: Settings = normalizeSettings({
+  language: DEFAULT_LANGUAGE,
+  enabled: true,
+  strictMatching: true,
+  useCdn: true,
+  exclusionSelectors: getDefaultExclusionSelectors(),
+  grabMode: false
+})
 const FLEXIBLE_STRICT_WHITESPACE = true
 const initialDocumentLang = document.documentElement?.getAttribute('lang') || 'en'
 
@@ -95,7 +120,7 @@ let reverseExactReplacements: Map<string, string> = new Map()
 let currentLanguage: Exclude<LanguageCode, 'off'> = DEFAULT_LANGUAGE
 let isEnabled = true
 let strictMatching = true
-let latestSettings: Settings = DEFAULT_SETTINGS
+let latestSettings: Settings = { ...DEFAULT_SETTINGS, exclusionSelectors: getDefaultExclusionSelectors() }
 
 // Loaded languages map (starts with bundled, may be updated via CDN)
 let loadedLanguages: Record<Exclude<LanguageCode, 'off'>, Dictionary> = { ...BUNDLED_LANGUAGES }
@@ -430,7 +455,7 @@ function shouldSkipTextNode(textNode: Text) {
   if (!parent) return true
   if (SKIP_TAGS.has(parent.tagName)) return true
   if (parent.isContentEditable) return true
-  
+
   // Dynamic Exclusion Check
   const effectiveSelectors = latestSettings.exclusionSelectors || EXCLUDED_SELECTORS
   if (effectiveSelectors.length > 0) {
@@ -658,18 +683,7 @@ function getSavedSettings(): Promise<Settings> {
   const storage = getStorage()
   return new Promise((resolve) => {
     storage.get(DEFAULT_SETTINGS, (result) => {
-      const language = (result.language as LanguageCode) ?? DEFAULT_LANGUAGE
-      const enabled =
-        typeof result.enabled === 'boolean' ? result.enabled : DEFAULT_SETTINGS.enabled
-      const strict =
-        typeof result.strictMatching === 'boolean'
-          ? result.strictMatching
-          : DEFAULT_SETTINGS.strictMatching
-      const useCdn =
-        typeof result.useCdn === 'boolean' ? result.useCdn : DEFAULT_SETTINGS.useCdn
-      const exclusionSelectors =
-        Array.isArray(result.exclusionSelectors) ? result.exclusionSelectors : DEFAULT_SETTINGS.exclusionSelectors
-      resolve({ language, enabled, strictMatching: strict, useCdn, exclusionSelectors })
+      resolve(normalizeSettings({ ...DEFAULT_SETTINGS, ...result }))
     })
   })
 }
@@ -806,6 +820,7 @@ async function refreshLocalesFromCdn() {
 // ---------------------------------------------------------------------------
 
 function applySettings(settings: Settings) {
+  const normalized = normalizeSettings(settings)
   // 1. Revert existing translations if currently enabled.
   // Ensures a clean slate (English) before applying new language or disqualifying.
   if (isEnabled) {
@@ -817,13 +832,13 @@ function applySettings(settings: Settings) {
   }
 
   // 2. Update state
-  latestSettings = settings
-  const language = settings.language === 'off' ? currentLanguage : settings.language
+  latestSettings = normalized
+  const language = normalized.language === 'off' ? currentLanguage : normalized.language
 
   // 3. Determine which dictionary to use
   let dictionary: Dictionary | undefined
 
-  if (settings.useCdn) {
+  if (normalized.useCdn) {
     // If CDN is enabled, prefer the loaded (external/cached) dictionary, fallback to bundle.
     dictionary = loadedLanguages[language] ?? BUNDLED_LANGUAGES[language]
   } else {
@@ -835,7 +850,7 @@ function applySettings(settings: Settings) {
   if (!dictionary) {
     // If CDN was enabled but the specific language wasn't found in loadedLanguages
     // (e.g., failed to fetch), try the default language from loadedLanguages.
-    if (settings.useCdn) {
+    if (normalized.useCdn) {
       dictionary = loadedLanguages[DEFAULT_LANGUAGE]
     }
     // Final fallback: use the bundled default language.
@@ -845,8 +860,8 @@ function applySettings(settings: Settings) {
   }
 
   currentLanguage = language
-  isEnabled = settings.enabled && settings.language !== 'off'
-  strictMatching = settings.strictMatching
+  isEnabled = normalized.enabled && normalized.language !== 'off'
+  strictMatching = normalized.strictMatching
 
   // Build the replacement maps (Exact vs Regex)
   const built = buildReplacements(dictionary, strictMatching)
@@ -858,6 +873,12 @@ function applySettings(settings: Settings) {
   reverseExactReplacements = builtReverse.exact
 
   updateDocumentLang(currentLanguage, isEnabled)
+
+  if (normalized.grabMode) {
+    enableGrabMode()
+  } else {
+    disableGrabMode()
+  }
 
   // 4. Apply new translations if enabled
   if (isEnabled) {
@@ -882,7 +903,8 @@ function listenForSettingsChanges() {
       !changes.language &&
       typeof changes.enabled === 'undefined' &&
       typeof changes.strictMatching === 'undefined' &&
-      typeof changes.useCdn === 'undefined' &&
+      typeof changes.useCdn === "undefined" &&
+      typeof changes.grabMode === "undefined" &&
       typeof changes.exclusionSelectors === 'undefined'
     )
       return
@@ -903,11 +925,15 @@ function listenForSettingsChanges() {
       hasChange = true
     }
     if (changes.useCdn) {
-      newSettings.useCdn = changes.useCdn.newValue
-      hasChange = true
+      newSettings.useCdn = changes.useCdn.newValue;
+      hasChange = true;
+    }
+    if (changes.grabMode) {
+      newSettings.grabMode = changes.grabMode.newValue;
+      hasChange = true;
     }
     if (changes.exclusionSelectors) {
-      newSettings.exclusionSelectors = changes.exclusionSelectors.newValue
+      newSettings.exclusionSelectors = resolveExclusionSelectors(changes.exclusionSelectors.newValue)
       hasChange = true
     }
 
