@@ -45,14 +45,14 @@ const DEFAULT_SETTINGS: Settings = {
 }
 
 // Supported languages for the options UI (English + native label for clarity)
-const LANGUAGES: Array<{ value: LanguageCode; label: string }> = [
-  { value: 'ja', label: 'Japanese 日本語' },
-  { value: 'zh-TW', label: 'Traditional Chinese 繁體中文' },
-  { value: 'zh-CN', label: 'Simplified Chinese 简体中文' },
-  { value: 'ko', label: 'Korean 한국어' },
-  { value: 'th', label: 'Thai ไทย' },
-  { value: 'fr', label: 'French Français' },
-  { value: 'it', label: 'Italian Italiano' }
+const LANGUAGES: Array<{ value: LanguageCode; en: string; native: string }> = [
+  { value: 'ja', en: 'Japanese', native: '日本語' },
+  { value: 'zh-TW', en: 'Traditional Chinese', native: '繁體中文' },
+  { value: 'zh-CN', en: 'Simplified Chinese', native: '简体中文' },
+  { value: 'ko', en: 'Korean', native: '한국어' },
+  { value: 'th', en: 'Thai', native: 'ไทย' },
+  { value: 'fr', en: 'French', native: 'Français' },
+  { value: 'it', en: 'Italian', native: 'Italiano' }
 ]
 
 // Extension UI translations (used to localize the options page itself)
@@ -301,7 +301,11 @@ function renderLanguageList(parent: HTMLElement) {
     label.className = 'language_option'
     label.innerHTML = `
         <input type="radio" name="language" value="${item.value}">
-        <span class="language_name">${item.label}</span>
+        <span class="language_name">
+            ${item.en}
+            <span class="language_sep">|</span>
+            <span class="language_native">${item.native}</span>
+        </span>
     `
     form.appendChild(label)
   })

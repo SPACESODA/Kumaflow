@@ -198,9 +198,16 @@ form {
   font-weight: 600;
 }
 
+.language_sep {
+  color: #cbd5e1;
+  margin: 0 6px;
+  font-weight: 400;
+}
+
 .language_native {
   color: #475569;
   font-size: 14px;
+  font-weight: 400;
 }
 
 .language_option input:disabled+span,
