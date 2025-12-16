@@ -5,6 +5,7 @@ import extZhCn from '../locales-extension/zh-CN.json'
 import extKo from '../locales-extension/ko.json'
 import extTh from '../locales-extension/th.json'
 import extFr from '../locales-extension/fr.json'
+import extIt from '../locales-extension/it.json'
 
 const RETRY_INTERVAL_MS = 800
 const MAX_RETRIES = 10
@@ -15,7 +16,8 @@ const EXTENSION_LOCALES: Record<Exclude<LanguageCode, 'off'>, Dictionary> = {
     'zh-CN': extZhCn,
     ko: extKo,
     th: extTh,
-    fr: extFr
+    fr: extFr,
+    it: extIt
 }
 
 type SettingsUpdate = { language?: LanguageCode; enabled?: boolean }
@@ -44,7 +46,7 @@ setInterval(() => {
     const footerMissing = !footer
     const footerStale = footer
         ? footer.dataset.lang !== pendingArgs.currentLanguage ||
-          footer.dataset.enabled !== String(pendingArgs.isEnabled)
+        footer.dataset.enabled !== String(pendingArgs.isEnabled)
         : false
 
     if (pathChanged || footerMissing || footerStale) {
@@ -147,6 +149,7 @@ function injectDesignerFooter(
             <option value="ko">한국어 (Korean)</option>
             <option value="th">ไทย (Thai)</option>
             <option value="fr">Français (French)</option>
+            <option value="it">Italiano (Italian)</option>
         </select>
     </div>
     <div class="wul-message">${msg}</div>

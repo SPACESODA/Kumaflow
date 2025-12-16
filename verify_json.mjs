@@ -16,8 +16,9 @@ const files = [
     'src/locales/zh-TW.json',
     'src/locales/zh-CN.json',
     'src/locales/ko.json',
+    'src/locales/th.json',
     'src/locales/fr.json',
-    'src/locales/th.json'
+    'src/locales/it.json'
 ];
 
 let hasError = false;

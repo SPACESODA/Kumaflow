@@ -17,9 +17,7 @@ const defaultLanguages = [
   'ko=src/locales/ko.json',
   'th=src/locales/th.json',
   'fr=src/locales/fr.json',
-  'it=src/locales/it.json',
-  'es=src/locales/es.json',
-  'de=src/locales/de.json'
+  'it=src/locales/it.json'
 ].join(',');
 
 if (!languagesEnv) {

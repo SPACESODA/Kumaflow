@@ -14,6 +14,7 @@ import extZhCn from '../locales-extension/zh-CN.json'
 import extKo from '../locales-extension/ko.json'
 import extTh from '../locales-extension/th.json'
 import extFr from '../locales-extension/fr.json'
+import extIt from '../locales-extension/it.json'
 
 // ---------------------------------------------------------------------------
 // TYPES
@@ -50,7 +51,8 @@ const LANGUAGES: Array<{ value: LanguageCode; label: string }> = [
   { value: 'zh-CN', label: 'Simplified Chinese 简体中文' },
   { value: 'ko', label: 'Korean 한국어' },
   { value: 'th', label: 'Thai ไทย' },
-  { value: 'fr', label: 'French Français' }
+  { value: 'fr', label: 'French Français' },
+  { value: 'it', label: 'Italian Italiano' }
 ]
 
 // Extension UI translations (used to localize the options page itself)
@@ -60,7 +62,8 @@ const EXTENSION_LOCALES: Record<Exclude<LanguageCode, 'off'>, Dictionary> = {
   'zh-CN': extZhCn,
   ko: extKo,
   th: extTh,
-  fr: extFr
+  fr: extFr,
+  it: extIt
 }
 
 // English fallback strings (when a translation is missing or language is off)
