@@ -140,14 +140,15 @@ function normalizeSettings(raw: Partial<Settings>): Settings {
 // ---------------------------------------------------------------------------
 
 // Tracks the last rendered language to decide when a full re-render is needed
-let lastRenderedLanguage: LanguageCode | null = null
-// Holds the current application state
-let currentSettings: Settings = { ...DEFAULT_SETTINGS }
-// Latest locale source metadata (per language).
-// This tells us if we are using the bundled JSON or a fresher version from CDN.
-let latestLocaleMeta: Record<Exclude<LanguageCode, 'off'>, LocaleMeta> | null = null
-// Track if a manual refresh is in progress to prevent UI flickering
-let isManuallyRefreshing = false
+const appState = {
+  lastRenderedLanguage: null as LanguageCode | null,
+  currentSettings: { ...DEFAULT_SETTINGS } as Settings,
+  // Latest locale source metadata (per language).
+  // This tells us if we are using the bundled JSON or a fresher version from CDN.
+  latestLocaleMeta: null as Record<Exclude<LanguageCode, 'off'>, LocaleMeta> | null,
+  // Track if a manual refresh is in progress to prevent UI flickering
+  isManuallyRefreshing: false
+}
 
 // ---------------------------------------------------------------------------
 // DOM RENDERING
