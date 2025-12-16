@@ -21,5 +21,7 @@
     "options_advanced_save": "保存排除项",
     "options_advanced_saved": "已保存！",
     "options_advanced_reset": "恢复默认",
-    "options_advanced_reset_confirm": "确认恢复默认？"
+    "options_advanced_reset_confirm": "确认恢复默认？",
+    "options_grab_mode_label": "抓取模式",
+    "options_grab_mode_desc": "轻松抓取未翻译的 UI 文本并将其粘贴到 POEditor 中，以帮助完成翻译。"
 }

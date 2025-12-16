@@ -9,7 +9,7 @@
 
 # Kumaflow - Webflow UI Localization
 
-**Kumaflow** is an open-source browser extension that lets you translate the [Webflow](https://try.webflow.com/s2) Dashboard pages and Designer UI into your language!
+**Kumaflow** is an browser extension that lets you translate the [Webflow](https://try.webflow.com/s2) Dashboard pages and Designer UI into your language!
 
 🐻 **ウオォォォー！** Kuma works hard behind the scenes, seamlessly showing translated text across these Webflow surfaces — all powered by our matching engine:
 
@@ -29,13 +29,16 @@ Open the extension's Options page to select your language. In the Webflow Design
 
 Click the toolbar icon to toggle translations at any time. This acts as a master switch — the badge will show OFF when translations are disabled.
 
-The plan is to support Japanese, Traditional Chinese, Simplified Chinese, and Korean first, with MORE languages to be added over time.
+It now supports Japanese, Traditional Chinese, Simplified Chinese, Korean, French, and Thai, with more languages to be added over time.
 
 ## Contribute Translations
 
 **Join to translate together on POEditor 🦜**
 
-Right now, adding accurate **terms** is the most important part of the project — so feel free to jump in and help!  
+Right now, adding accurate **terms** (strings) is the most important part of the project — so feel free to jump in and help!
+
+Kumaflow includes a **Grab Mode** feature (enable it in **Options**) that lets you capture untranslated UI text to your clipboard with simple clicks, so you can paste terms into POEditor quickly and accurately.
+
 POEditor project: https://poeditor.com/join/project/7drFUDh3dh
 
 Latest locale JSON files via Cloudflare Pages / jsDelivr:

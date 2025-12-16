@@ -21,5 +21,7 @@
     "options_advanced_save": "บันทึกการยกเว้น",
     "options_advanced_saved": "บันทึกแล้ว!",
     "options_advanced_reset": "รีเซ็ตเป็นค่าเริ่มต้น",
-    "options_advanced_reset_confirm": "ยืนยันการรีเซ็ตเป็นค่าเริ่มต้นหรือไม่?"
+    "options_advanced_reset_confirm": "ยืนยันการรีเซ็ตเป็นค่าเริ่มต้นหรือไม่?",
+    "options_grab_mode_label": "โหมด Grab",
+    "options_grab_mode_desc": "จับข้อความ UI ที่ยังไม่ได้แปลได้อย่างง่ายดายและวางลงใน POEditor เพื่อช่วยให้การแปลสมบูรณ์"
 }

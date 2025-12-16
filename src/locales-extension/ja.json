@@ -21,5 +21,7 @@
     "options_advanced_save": "除外設定を保存",
     "options_advanced_saved": "保存しました！",
     "options_advanced_reset": "デフォルトに戻す",
-    "options_advanced_reset_confirm": "デフォルトに戻してもよろしいですか？"
+    "options_advanced_reset_confirm": "デフォルトに戻してもよろしいですか？",
+    "options_grab_mode_label": "取得モード",
+    "options_grab_mode_desc": "未翻訳の UI テキストを簡単に取得し、POEditor に貼り付けて翻訳の完了に役立てることができます。"
 }

@@ -21,5 +21,7 @@
     "options_advanced_save": "儲存排除項目",
     "options_advanced_saved": "已儲存！",
     "options_advanced_reset": "恢復預設",
-    "options_advanced_reset_confirm": "確認恢復預設？"
+    "options_advanced_reset_confirm": "確認恢復預設？",
+    "options_grab_mode_label": "擷取模式",
+    "options_grab_mode_desc": "輕鬆擷取未翻譯的 UI 文字並將其貼到 POEditor 中，以協助完成翻譯。"
 }

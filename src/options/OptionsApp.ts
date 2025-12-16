@@ -87,7 +87,9 @@ const FALLBACK_STRINGS: Dictionary = {
   options_advanced_save: 'Save Exclusions',
   options_advanced_saved: 'Saved!',
   options_advanced_reset: 'Reset to default',
-  options_advanced_reset_confirm: 'Confirm reset to default?'
+  options_advanced_reset_confirm: 'Confirm reset to default?',
+  options_grab_mode_label: 'Grab Mode',
+  options_grab_mode_desc: 'Easily capture untranslated UI text and paste it into POEditor to help complete translations.'
 }
 
 // ---------------------------------------------------------------------------
@@ -217,7 +219,7 @@ function renderFullPage(root: HTMLElement, settings: Settings) {
 
   renderToggleItem(container, 'strictMatching', getText(lang, 'options_strict_label'), getText(lang, 'options_strict_desc'))
   renderToggleItem(container, 'useCdn', getText(lang, 'options_cdn_label'), getText(lang, 'options_cdn_desc'))
-  renderToggleItem(container, 'grabMode', 'Grab Mode', 'Easily grab untranslatedUI text and paste it to POEditor to help improve translation completeness.')
+  renderToggleItem(container, 'grabMode', getText(lang, 'options_grab_mode_label'), getText(lang, 'options_grab_mode_desc'))
 
   renderAdvancedSection(container, settings)
 
