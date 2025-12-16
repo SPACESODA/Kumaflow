@@ -657,11 +657,11 @@ function extractLocaleMeta(
   if (!cache || typeof cache !== 'object') return null
   const meta: Partial<Record<Exclude<LanguageCode, 'off'>, LocaleMeta>> = {}
   Object.entries(cache).forEach(([code, entry]) => {
-    const source = (entry as any)?.source
+    const source = entry?.source
     if (source === 'primary' || source === 'secondary') {
       meta[code as Exclude<LanguageCode, 'off'>] = {
         source,
-        fetchedAt: (entry as any)?.fetchedAt
+        fetchedAt: entry?.fetchedAt
       }
     }
   })
