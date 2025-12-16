@@ -4,7 +4,7 @@
   --theme-color-yellow: #eecf34;
   --theme-shadow-yellow: rgba(238, 207, 52, 0.12);
   color-scheme: light;
-  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
   background: radial-gradient(circle at 10% 20%, #f7fbff, #e6f0ff 25%, #f8faff 50%);
 }
 

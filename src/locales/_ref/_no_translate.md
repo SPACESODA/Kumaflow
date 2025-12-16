@@ -1,7 +1,8 @@
-## Do not translate the below words or terms!
+## No Translate
 
-DO NOT translate the below words or terms.  
-If these words are part of a sentence, KEEP them as they are in ENGLISH within the translated sentence.
+**DO NOT translate the below words or terms!**
+
+If these words are part of a sentence, KEEP them as they are in English within the translated sentence.
 
 - Webflow
 - Made in Webflow

@@ -16,9 +16,10 @@ export const EXCLUDED_SELECTORS = [
     // '[data-pop="wow"]',  // Attribute
     // 'nav.top',           // Tag + Class
     // Webflow Pages
-    'h1[data-sc="HeadingText"] span[data-sc="HeaderBreadcrumbTitle"]',
+    'h1 > span[data-sc="HeaderBreadcrumbTitle Text"]',
     // Webflow Designer
     'div.bem-SearchResultPreview', // SEO Preview
+    'button[data-automation-id="top-bar-page-name"] span[data-text="true"]', // Top Bar > Page Name
     '[data-automation-id="page-list-row-wrapper"] div.bem-List_Cell',
     '[data-palette="CMSListItem"]',
     '[data-palette="CMSItemsListPanelTitle"]',
