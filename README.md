@@ -37,7 +37,7 @@ It now supports Japanese, Traditional Chinese, Simplified Chinese, Korean, Frenc
 
 Right now, adding accurate **terms** (strings) is the most important part of the project — so feel free to jump in and help!
 
-Kumaflow includes a **Grab Mode** feature (enable it in **Options**) that lets you capture untranslated UI text to your clipboard with simple clicks, so you can paste terms into POEditor quickly and accurately.
+Kumaflow includes a **Grab Mode** feature (enable it in **Options**) that lets you capture untranslated UI text to your clipboard with simple clicks, so you can paste into POEditor quickly and accurately.
 
 POEditor project: https://poeditor.com/join/project/7drFUDh3dh
 

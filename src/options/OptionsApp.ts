@@ -14,8 +14,6 @@ import extZhCn from '../locales-extension/zh-CN.json'
 import extKo from '../locales-extension/ko.json'
 import extTh from '../locales-extension/th.json'
 import extFr from '../locales-extension/fr.json'
-// import { EXCLUDED_SELECTORS } from '../content/exclusion-selectors' // Removed
-
 
 // ---------------------------------------------------------------------------
 // TYPES
@@ -509,7 +507,7 @@ function bindEvents(root: HTMLElement) {
     // 2) Second click (while confirming) actually restores defaults and saves them.
     // This avoids alert() and keeps intent visible in the UI.
     let resetConfirming = false
-    let resetConfirmTimeout: number | undefined
+    let resetConfirmTimeout: ReturnType<typeof setTimeout> | undefined
 
     const defaultResetLabel = getText(currentSettings.language, 'options_advanced_reset')
     const confirmResetLabel = getText(currentSettings.language, 'options_advanced_reset_confirm')
@@ -523,7 +521,7 @@ function bindEvents(root: HTMLElement) {
         resetConfirmTimeout = undefined
       }
       if (confirming) {
-        resetConfirmTimeout = window.setTimeout(() => setResetState(false), 4000)
+        resetConfirmTimeout = setTimeout(() => setResetState(false), 4000)
       }
     }
 
