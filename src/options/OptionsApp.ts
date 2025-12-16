@@ -584,8 +584,8 @@ export default function initOptionsPage() {
   // 1. Initial Load: Get settings and cache meta from storage.
   // We fetch both user settings (sync/local) and the translation cache metadata (local).
   storage.get({ ...DEFAULT_SETTINGS, exclusionSelectors: getDefaultExclusionSelectors() }, (items) => {
-    cacheStorage.get({ [LOCALE_CACHE_KEY]: null }, (cacheItems) => {
-      latestLocaleMeta = extractLocaleMeta((cacheItems as any)[LOCALE_CACHE_KEY])
+    cacheStorage.get({ [LOCALE_CACHE_KEY]: null }, (cacheItems: { [LOCALE_CACHE_KEY]: Record<Exclude<LanguageCode, 'off'>, { source?: string; fetchedAt?: number }> | null }) => {
+      latestLocaleMeta = extractLocaleMeta(cacheItems[LOCALE_CACHE_KEY])
       // Merge defaults with loaded items to ensure complete object
       const settings = normalizeSettings({ ...DEFAULT_SETTINGS, ...items })
       renderApp(settings)
