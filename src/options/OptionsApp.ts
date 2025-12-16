@@ -99,13 +99,21 @@ const FALLBACK_STRINGS: Dictionary = {
 
 // Safely retrieve the storage area (Sync if available, otherwise Local)
 function getStorage(): chrome.storage.SyncStorageArea | chrome.storage.LocalStorageArea {
-  return chrome?.storage?.sync || chrome?.storage?.local
+  const sync = chrome?.storage?.sync;
+  const local = chrome?.storage?.local;
+  if (sync) return sync;
+  if (local) return local;
+  throw new Error('Neither chrome.storage.sync nor chrome.storage.local is available in this environment.');
 }
 
 // Heavier cache reads (like the large translation map) should come from 'local' storage
 // when available to avoid hitting 'sync' storage quotas and latency.
 function getCacheStorage(): chrome.storage.LocalStorageArea | chrome.storage.SyncStorageArea {
-  return chrome?.storage?.local || chrome?.storage?.sync
+  const local = chrome?.storage?.local;
+  const sync = chrome?.storage?.sync;
+  if (local) return local;
+  if (sync) return sync;
+  throw new Error('Neither chrome.storage.local nor chrome.storage.sync is available in this environment.');
 }
 
 // Get a localized string for the Options UI (fallback to English)
