@@ -11,15 +11,11 @@
 import fs from 'fs';
 import path from 'path';
 
-const files = [
-    'src/locales/ja.json',
-    'src/locales/zh-TW.json',
-    'src/locales/zh-CN.json',
-    'src/locales/ko.json',
-    'src/locales/th.json',
-    'src/locales/fr.json',
-    'src/locales/it.json'
-];
+// Dynamically discover all .json files in src/locales/
+const localesDir = path.join('src', 'locales');
+const files = fs.readdirSync(localesDir)
+    .filter(f => f.endsWith('.json'))
+    .map(f => path.join('src', 'locales', f));
 
 let hasError = false;
 
