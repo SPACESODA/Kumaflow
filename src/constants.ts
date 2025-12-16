@@ -12,11 +12,12 @@ export const EXCLUDED_SELECTORS = [
     // '#apple-pie',        // ID example
     // '.top-bar',          // Class example
     // '[data-pop="wow"]',  // Attribute example
-    // 'nav.top',           // Tag + Class example (excludes <nav class="top"> but not <div class="top">)
+    // 'nav.top',           // Tag + Class example
     // There are parts in Webflow, especially in the Designer, that should not be translated.
     // Default selectors here:
     'div.bem-SearchResultPreview',
     '[data-automation-id="page-list-row-wrapper"] div.bem-List_Cell',
     '[data-palette="CMSListItem"]',
-    '[data-palette="CMSItemsListPanelTitle"]'
+    '[data-palette="CMSItemsListPanelTitle"]',
+    '[data-palette="VirtualizedSearchableListGroup"] [data-sc="RowItemLabel"]'
 ];

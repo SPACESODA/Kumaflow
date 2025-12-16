@@ -21,12 +21,13 @@ import extFr from '../locales-extension/fr.json'
 // TYPES
 // ---------------------------------------------------------------------------
 
-type Settings = { 
-  language: LanguageCode; 
-  enabled: boolean; 
-  strictMatching: boolean; 
+type Settings = {
+  language: LanguageCode;
+  enabled: boolean;
+  strictMatching: boolean;
   useCdn: boolean;
   exclusionSelectors: string[];
+  grabMode: boolean;
 }
 type LocaleMeta = { source: 'primary' | 'secondary' | 'bundled'; fetchedAt?: number }
 
@@ -35,12 +36,13 @@ type LocaleMeta = { source: 'primary' | 'secondary' | 'bundled'; fetchedAt?: num
 // ---------------------------------------------------------------------------
 
 const DEFAULT_LANGUAGE: LanguageCode = 'ja'
-const DEFAULT_SETTINGS: Settings = { 
-  language: DEFAULT_LANGUAGE, 
-  enabled: true, 
-  strictMatching: true, 
+const DEFAULT_SETTINGS: Settings = {
+  language: DEFAULT_LANGUAGE,
+  enabled: true,
+  strictMatching: true,
   useCdn: true,
-  exclusionSelectors: EXCLUDED_SELECTORS
+  exclusionSelectors: getDefaultExclusionSelectors(),
+  grabMode: false
 }
 
 // Supported languages for the options UI (English + native label for clarity)
@@ -110,6 +112,26 @@ function getText(lang: LanguageCode, key: string): string {
   return dict?.[key] || FALLBACK_STRINGS[key] || ''
 }
 
+// Always return a fresh copy to avoid shared mutations between defaults and storage
+function getDefaultExclusionSelectors(): string[] {
+  return [...EXCLUDED_SELECTORS]
+}
+
+function resolveExclusionSelectors(value: unknown): string[] {
+  return Array.isArray(value) ? value : getDefaultExclusionSelectors()
+}
+
+function normalizeSettings(raw: Partial<Settings>): Settings {
+  return {
+    language: (raw.language as LanguageCode) ?? DEFAULT_LANGUAGE,
+    enabled: typeof raw.enabled === 'boolean' ? raw.enabled : true,
+    strictMatching: typeof raw.strictMatching === 'boolean' ? raw.strictMatching : true,
+    useCdn: typeof raw.useCdn === 'boolean' ? raw.useCdn : true,
+    exclusionSelectors: resolveExclusionSelectors(raw.exclusionSelectors),
+    grabMode: typeof raw.grabMode === 'boolean' ? raw.grabMode : false
+  }
+}
+
 // ---------------------------------------------------------------------------
 // STATE MANAGEMENT
 // ---------------------------------------------------------------------------
@@ -117,7 +139,7 @@ function getText(lang: LanguageCode, key: string): string {
 // Tracks the last rendered language to decide when a full re-render is needed
 let lastRenderedLanguage: LanguageCode | null = null
 // Holds the current application state
-let currentSettings: Settings = { ...DEFAULT_SETTINGS }
+let currentSettings: Settings = { ...DEFAULT_SETTINGS, exclusionSelectors: getDefaultExclusionSelectors() }
 // Latest locale source metadata (per language).
 // This tells us if we are using the bundled JSON or a fresher version from CDN.
 let latestLocaleMeta: Record<Exclude<LanguageCode, 'off'>, LocaleMeta> | null = null
@@ -195,6 +217,7 @@ function renderFullPage(root: HTMLElement, settings: Settings) {
 
   renderToggleItem(container, 'strictMatching', getText(lang, 'options_strict_label'), getText(lang, 'options_strict_desc'))
   renderToggleItem(container, 'useCdn', getText(lang, 'options_cdn_label'), getText(lang, 'options_cdn_desc'))
+  renderToggleItem(container, 'grabMode', 'Grab Mode', 'Easily grab untranslatedUI text and paste it to POEditor to help improve translation completeness.')
 
   renderAdvancedSection(container, settings)
 
@@ -221,7 +244,7 @@ function renderFullPage(root: HTMLElement, settings: Settings) {
 // Render a checkbox toggle row
 function renderToggleItem(parent: HTMLElement, name: string, title: string, desc: string) {
   const label = document.createElement('label')
-  label.className = 'toggle'
+  label.className = `toggle toggle_${name}`
   label.innerHTML = `
     <input type="checkbox" name="${name}">
     <span class="toggle_track"><span class="toggle_thumb"></span></span>
@@ -234,7 +257,7 @@ function renderToggleItem(parent: HTMLElement, name: string, title: string, desc
 function renderAdvancedSection(parent: HTMLElement, settings: Settings) {
   const lang = settings.language
   const wrapper = document.createElement('div')
-  
+
   wrapper.innerHTML = `
     <button type="button" class="advanced_toggle">
       <span>▶</span> ${getText(lang, 'options_advanced_toggle')}
@@ -255,13 +278,13 @@ function renderAdvancedSection(parent: HTMLElement, settings: Settings) {
       </div>
     </div>
   `
-  
+
   parent.appendChild(wrapper)
-  
+
   // Set initial value
   const textarea = wrapper.querySelector('textarea')
   if (textarea) {
-    textarea.value = (settings.exclusionSelectors || EXCLUDED_SELECTORS).join('\n')
+    textarea.value = resolveExclusionSelectors(settings.exclusionSelectors).join('\n')
   }
 }
 
@@ -305,6 +328,19 @@ function updateValues(root: HTMLElement, settings: Settings) {
 
     const radios = form.querySelectorAll<HTMLInputElement>('input[type="radio"]')
     radios.forEach(r => r.disabled = !settings.enabled)
+  }
+
+  // Update Exclusion List (keep in sync with storage/reset)
+  const textarea = root.querySelector('.exclusion_input') as HTMLTextAreaElement
+  if (textarea) {
+    const currentVal = textarea.value.split('\n').map(s => s.trim()).filter(Boolean).join('\n')
+    const newVal = resolveExclusionSelectors(settings.exclusionSelectors).join('\n')
+    // Only update if significantly different to avoid cursor jumping if user is typing
+    // (Though user typing usually doesn't trigger external setting updates unless we debounced save)
+    // For Reset, this is crucial.
+    if (currentVal !== newVal) {
+      textarea.value = newVal
+    }
   }
 }
 
@@ -434,7 +470,7 @@ function bindEvents(root: HTMLElement) {
       const panel = root.querySelector('#advanced_panel') as HTMLElement
       const arrow = advToggle.querySelector('span')
       const isOpen = panel.getAttribute('data-open') === 'true'
-      
+
       panel.setAttribute('data-open', (!isOpen).toString())
       if (arrow) arrow.textContent = isOpen ? '▶' : '▼'
     })
@@ -446,10 +482,10 @@ function bindEvents(root: HTMLElement) {
     saveBtn.addEventListener('click', () => {
       const textarea = root.querySelector('.exclusion_input') as HTMLTextAreaElement
       const status = root.querySelector('.save_status') as HTMLElement
-      
+
       const raw = textarea.value
       const lines = raw.split('\n').map(s => s.trim()).filter(Boolean)
-      
+
       // Save
       storage.set({ exclusionSelectors: lines }, () => {
         // Show saved status
@@ -466,26 +502,57 @@ function bindEvents(root: HTMLElement) {
   // Advanced Reset Handler
   const resetBtn = root.querySelector('.reset_button')
   if (resetBtn) {
+    // Inline two-click confirm for reset:
+    // 1) First click flips the label to the confirm text and starts a short timeout.
+    // 2) Second click (while confirming) actually restores defaults and saves them.
+    // This avoids alert() and keeps intent visible in the UI.
+    let resetConfirming = false
+    let resetConfirmTimeout: number | undefined
+
+    const defaultResetLabel = getText(currentSettings.language, 'options_advanced_reset')
+    const confirmResetLabel = getText(currentSettings.language, 'options_advanced_reset_confirm')
+
+    const setResetState = (confirming: boolean) => {
+      resetConfirming = confirming
+      resetBtn.textContent = confirming ? confirmResetLabel : defaultResetLabel
+      resetBtn.setAttribute('data-confirming', confirming.toString())
+      if (resetConfirmTimeout) {
+        clearTimeout(resetConfirmTimeout)
+        resetConfirmTimeout = undefined
+      }
+      if (confirming) {
+        resetConfirmTimeout = window.setTimeout(() => setResetState(false), 4000)
+      }
+    }
+
     resetBtn.addEventListener('click', () => {
-      if (!confirm(getText(currentSettings.language, 'options_advanced_reset_confirm'))) return
+      if (!resetConfirming) {
+        setResetState(true)
+        return
+      }
 
       const textarea = root.querySelector('.exclusion_input') as HTMLTextAreaElement
       const status = root.querySelector('.save_status') as HTMLElement
-      
-      const defaults = EXCLUDED_SELECTORS
-      
-      // Save
-      storage.set({ exclusionSelectors: defaults }, () => {
-        // Update UI
-        if (textarea) textarea.value = defaults.join('\n')
-        
-        // Show status (maybe different message? re-using Saved is fine)
+
+      const defaults = getDefaultExclusionSelectors()
+      const updatedSettings = { ...currentSettings, exclusionSelectors: defaults }
+
+      // Update UI immediately
+      if (textarea) textarea.value = defaults.join('\n')
+
+      const finish = () => {
         if (status) {
           status.classList.add('visible')
           setTimeout(() => status.classList.remove('visible'), 2000)
         }
-        // Update local state
-        currentSettings.exclusionSelectors = defaults
+        setResetState(false)
+        // Keep local state and inputs in sync without needing a full reload
+        renderApp(updatedSettings)
+      }
+
+      // Clear any stored custom values, then write defaults so future loads use them.
+      storage.remove('exclusionSelectors', () => {
+        storage.set({ exclusionSelectors: defaults }, finish)
       })
     })
   }
@@ -516,11 +583,11 @@ export default function initOptionsPage() {
 
   // 1. Initial Load: Get settings and cache meta from storage.
   // We fetch both user settings (sync/local) and the translation cache metadata (local).
-  storage.get({ ...DEFAULT_SETTINGS }, (items) => {
+  storage.get({ ...DEFAULT_SETTINGS, exclusionSelectors: getDefaultExclusionSelectors() }, (items) => {
     cacheStorage.get({ [LOCALE_CACHE_KEY]: null }, (cacheItems) => {
       latestLocaleMeta = extractLocaleMeta((cacheItems as any)[LOCALE_CACHE_KEY])
       // Merge defaults with loaded items to ensure complete object
-      const settings = { ...DEFAULT_SETTINGS, ...items }
+      const settings = normalizeSettings({ ...DEFAULT_SETTINGS, ...items })
       renderApp(settings)
     })
   })
@@ -550,8 +617,12 @@ export default function initOptionsPage() {
       newSettings.useCdn = changes.useCdn.newValue
       hasChange = true
     }
+    if (changes.grabMode) {
+      newSettings.grabMode = changes.grabMode.newValue
+      hasChange = true
+    }
     if (changes.exclusionSelectors) {
-      newSettings.exclusionSelectors = changes.exclusionSelectors.newValue
+      newSettings.exclusionSelectors = resolveExclusionSelectors(changes.exclusionSelectors.newValue)
       // Re-render to keep the textarea in sync if changed externally
       hasChange = true
     }
