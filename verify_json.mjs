@@ -68,7 +68,8 @@ function verifyJsonStructure(source) {
                     // Use JSON.parse to properly unescape
                     JSON.parse(raw);
                 } catch (e) {
-                    error(`Invalid string escape sequence in ${raw}: ${e?.message || e}`);
+                    const stringPos = index - start;
+                    error(`Invalid string escape sequence in ${raw}: ${e?.message || e} (at position ${stringPos} within the string, from JSON position ${start} to ${index})`);
                 }
                 advance(); // closing quote
                 return raw;
