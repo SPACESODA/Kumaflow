@@ -35,11 +35,16 @@ If these words are in the middle of a sentence, KEEP them as they are in ENGLISH
 - Webclip / webclip
 - Grid
 - Flex
-- Gap
+- Gap (when referring to CSS's gap property)
 - Alt / alt (img's alt attribute)
+- Margin
+- Padding
 
 Special rules - Japanese:
 
 - Workspace / workspace / Workspaces / workspaces: ワークスペース
 - Library / Libraries: ライブラリ
 - Ecommerce: EC
+- Margin: マージン
+- Padding: パディング
+- Gap: ギャップ

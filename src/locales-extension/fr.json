@@ -21,5 +21,7 @@
     "options_advanced_save": "Enregistrer les exclusions",
     "options_advanced_saved": "Enregistré !",
     "options_advanced_reset": "Rétablir par défaut",
-    "options_advanced_reset_confirm": "Confirmer la réinitialisation par défaut ?"
+    "options_advanced_reset_confirm": "Confirmer la réinitialisation par défaut ?",
+    "options_grab_mode_label": "Mode Capture",
+    "options_grab_mode_desc": "Capturez facilement le texte non traduit de l'interface et collez-le dans POEditor pour aider à compléter les traductions."
 }
