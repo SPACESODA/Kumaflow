@@ -16,6 +16,7 @@ export const EXCLUDED_SELECTORS = [
     // '[data-pop="wow"]',  // Attribute
     // 'nav.top',           // Tag + Class
     // Webflow Pages
+    'h1[data-sc="HeadingText"] span[data-sc="HeaderBreadcrumbTitle"]',
     // Webflow Designer
     'div.bem-SearchResultPreview', // SEO Preview
     '[data-automation-id="page-list-row-wrapper"] div.bem-List_Cell',
