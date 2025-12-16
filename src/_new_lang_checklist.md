@@ -2,7 +2,7 @@
 
 To add a new language, update these files:
 
-- `src/types.ts`: Add 'fr' to LanguageCode type.
+- `src/types.ts`: Add '*' to LanguageCode type (* is the language code).
 - `src/locales/*.json`: Prepare the MAIN translations (via POEditor).
 - `src/locales-extension/*.json`: Prepare the extension's UI translations.
 - `src/content/scripts.ts`: Import `src/locales/*.json` and add to BUNDLED_LANGUAGES object.
@@ -10,7 +10,6 @@ To add a new language, update these files:
 - `src/content/injections.ts`: Add new language options.
 - `.github/scripts/pull-poeditor.mjs`: Add 'fr' to the list for pulling from POEditor.
 - `_locales/*/messages.json`: Create extension metadata for Chrome Web Store.
-- `verify_json.mjs`: Add to the list of json files to verify.
 
 Content updates:
 

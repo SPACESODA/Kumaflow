@@ -11,20 +11,20 @@
 import fs from 'fs';
 import path from 'path';
 
-const files = [
-    'src/locales/ja.json',
-    'src/locales/zh-TW.json',
-    'src/locales/zh-CN.json',
-    'src/locales/ko.json',
-    'src/locales/th.json',
-    'src/locales/fr.json',
-    'src/locales/it.json'
-];
+// Dynamically discover all .json files in src/locales/ and src/locales-extension/
+const targetDirs = ['src/locales', 'src/locales-extension'];
+const files = targetDirs.flatMap(dir => {
+    const dirPath = path.join(process.cwd(), dir);
+    if (!fs.existsSync(dirPath)) return [];
+    return fs.readdirSync(dirPath)
+        .filter(f => f.endsWith('.json'))
+        .map(f => path.join(dir, f));
+});
 
 let hasError = false;
 
 // Regex to match valid JSON numbers (see ECMA-404)
-const JSON_NUMBER_REGEX = /^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?/;
+const JSON_NUMBER_REGEX = /^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?$/;
 
 /**
  * Lightweight JSON parser to detect duplicate keys per object while still
@@ -68,7 +68,8 @@ function verifyJsonStructure(source) {
                     // Use JSON.parse to properly unescape
                     JSON.parse(raw);
                 } catch (e) {
-                    error(`Invalid string escape sequence in ${raw}: ${e?.message || e}`);
+                    const stringPos = index - start;
+                    error(`Invalid string escape sequence in ${raw}: ${e?.message || e} (at position ${stringPos} within the string, from JSON position ${start} to ${index})`);
                 }
                 advance(); // closing quote
                 return raw;

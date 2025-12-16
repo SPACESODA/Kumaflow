@@ -99,13 +99,21 @@ const FALLBACK_STRINGS: Dictionary = {
 
 // Safely retrieve the storage area (Sync if available, otherwise Local)
 function getStorage(): chrome.storage.SyncStorageArea | chrome.storage.LocalStorageArea {
-  return chrome?.storage?.sync || chrome?.storage?.local
+  const sync = chrome?.storage?.sync;
+  const local = chrome?.storage?.local;
+  if (sync) return sync;
+  if (local) return local;
+  throw new Error('Neither chrome.storage.sync nor chrome.storage.local is available in this environment.');
 }
 
 // Heavier cache reads (like the large translation map) should come from 'local' storage
 // when available to avoid hitting 'sync' storage quotas and latency.
 function getCacheStorage(): chrome.storage.LocalStorageArea | chrome.storage.SyncStorageArea {
-  return chrome?.storage?.local || chrome?.storage?.sync
+  const local = chrome?.storage?.local;
+  const sync = chrome?.storage?.sync;
+  if (local) return local;
+  if (sync) return sync;
+  throw new Error('Neither chrome.storage.local nor chrome.storage.sync is available in this environment.');
 }
 
 // Get a localized string for the Options UI (fallback to English)
@@ -139,15 +147,16 @@ function normalizeSettings(raw: Partial<Settings>): Settings {
 // STATE MANAGEMENT
 // ---------------------------------------------------------------------------
 
-// Tracks the last rendered language to decide when a full re-render is needed
-let lastRenderedLanguage: LanguageCode | null = null
-// Holds the current application state
-let currentSettings: Settings = { ...DEFAULT_SETTINGS }
-// Latest locale source metadata (per language).
-// This tells us if we are using the bundled JSON or a fresher version from CDN.
-let latestLocaleMeta: Record<Exclude<LanguageCode, 'off'>, LocaleMeta> | null = null
-// Track if a manual refresh is in progress to prevent UI flickering
-let isManuallyRefreshing = false
+// Centralized state object for the options page.
+const appState = {
+  lastRenderedLanguage: null as LanguageCode | null,
+  currentSettings: { ...DEFAULT_SETTINGS } as Settings,
+  // Latest locale source metadata (per language).
+  // This tells us if we are using the bundled JSON or a fresher version from CDN.
+  latestLocaleMeta: null as Record<Exclude<LanguageCode, 'off'>, LocaleMeta> | null,
+  // Track if a manual refresh is in progress to prevent UI flickering
+  isManuallyRefreshing: false
+}
 
 // ---------------------------------------------------------------------------
 // DOM RENDERING
@@ -155,14 +164,14 @@ let isManuallyRefreshing = false
 
 // Main render: full re-render on language change, otherwise just sync values
 function renderApp(settings: Settings) {
-  currentSettings = settings
+  appState.currentSettings = settings
   const root = document.getElementById('root')
   if (!root) return
 
   // Full re-render needed if language changed (to update UI text).
   // We must re-bind events because the DOM nodes are replaced.
-  if (lastRenderedLanguage !== settings.language) {
-    lastRenderedLanguage = settings.language
+  if (appState.lastRenderedLanguage !== settings.language) {
+    appState.lastRenderedLanguage = settings.language
     renderFullPage(root, settings)
     bindEvents(root)
   }
@@ -173,8 +182,8 @@ function renderApp(settings: Settings) {
   // Only update badge if not in the middle of a manual refresh result.
   // This prevents the "Done" message from being immediately overwritten by "Bundled"
   // before the user has a chance to see it.
-  if (!isManuallyRefreshing) {
-    updateLocaleBadge(root, latestLocaleMeta, settings)
+  if (!appState.isManuallyRefreshing) {
+    updateLocaleBadge(root, appState.latestLocaleMeta, settings)
   }
 }
 
@@ -422,12 +431,12 @@ function bindEvents(root: HTMLElement) {
       // Optimistic UI update: Toggle the switch visually immediately.
       // The actual storage save happens asynchronously below.
       if (key === 'enabled') {
-        updateValues(root, { ...currentSettings, enabled: val })
+        updateValues(root, { ...appState.currentSettings, enabled: val })
       }
 
       // Save to storage
       storage.set({ [key]: val }, () => {
-        setStatusMsg(root, getText(currentSettings.language, 'options_saved_msg'))
+        setStatusMsg(root, getText(appState.currentSettings.language, 'options_saved_msg'))
       })
     })
   })
@@ -441,12 +450,12 @@ function bindEvents(root: HTMLElement) {
 
       // Saving language triggers 'onChanged', which will call renderApp() and re-render the page.
       storage.set({ language: val, enabled: true }, () => {
-        setStatusMsg(root, getText(currentSettings.language, 'options_saved_msg'))
+        setStatusMsg(root, getText(appState.currentSettings.language, 'options_saved_msg'))
       })
 
       // Updates internal state loosely until the re-render happens
-      currentSettings.language = val
-      currentSettings.enabled = true
+      appState.currentSettings.language = val
+      appState.currentSettings.enabled = true
     }
   })
 
@@ -454,19 +463,19 @@ function bindEvents(root: HTMLElement) {
   const badge = root.querySelector('#cdn_json_badge')
   badge?.addEventListener('click', () => {
     // Only allow refresh if using CDN (checked via valid class or settings)
-    if (!currentSettings.useCdn) return
+    if (!appState.currentSettings.useCdn) return
 
     const el = badge as HTMLElement
     // 1. Set Loading Text
-    el.textContent = getText(currentSettings.language, 'options_refreshing_msg')
-    isManuallyRefreshing = true
+    el.textContent = getText(appState.currentSettings.language, 'options_refreshing_msg')
+    appState.isManuallyRefreshing = true
 
     chrome.storage.local.remove(LOCALE_CACHE_KEY, () => {
       // 2. Set Done Text on completion
       // We keep isManuallyRefreshing = true so onChanged doesn't overwrite this with "Bundled"
       // It stays true so this message persists until the user reloads the Page
       // or until a NEW cache entry appears (which happens when they visit Webflow).
-      el.textContent = getText(currentSettings.language, 'options_refresh_done_msg')
+      el.textContent = getText(appState.currentSettings.language, 'options_refresh_done_msg')
     })
   })
 
@@ -501,7 +510,7 @@ function bindEvents(root: HTMLElement) {
           setTimeout(() => status.classList.remove('visible'), 2000)
         }
         // Update local state
-        currentSettings.exclusionSelectors = lines
+        appState.currentSettings.exclusionSelectors = lines
       })
     })
   }
@@ -516,8 +525,16 @@ function bindEvents(root: HTMLElement) {
     let resetConfirming = false
     let resetConfirmTimeout: ReturnType<typeof setTimeout> | undefined
 
-    const defaultResetLabel = getText(currentSettings.language, 'options_advanced_reset')
-    const confirmResetLabel = getText(currentSettings.language, 'options_advanced_reset_confirm')
+    // Clean up the timeout if the page is unloaded, to prevent memory leaks
+    window.addEventListener('beforeunload', () => {
+      if (resetConfirmTimeout) {
+        clearTimeout(resetConfirmTimeout)
+        resetConfirmTimeout = undefined
+      }
+    });
+
+    const defaultResetLabel = getText(appState.currentSettings.language, 'options_advanced_reset')
+    const confirmResetLabel = getText(appState.currentSettings.language, 'options_advanced_reset_confirm')
 
     const setResetState = (confirming: boolean) => {
       resetConfirming = confirming
@@ -542,7 +559,7 @@ function bindEvents(root: HTMLElement) {
       const status = root.querySelector('.save_status') as HTMLElement
 
       const defaults = getDefaultExclusionSelectors()
-      const updatedSettings = { ...currentSettings, exclusionSelectors: defaults }
+      const updatedSettings = { ...appState.currentSettings, exclusionSelectors: defaults }
 
       // Update UI immediately
       if (textarea) textarea.value = defaults.join('\n')
@@ -572,7 +589,7 @@ function setStatusMsg(root: HTMLElement, msg: string) {
     setTimeout(() => {
       // Revert to idle message if still in 'changed' state
       if (el.dataset.status === 'changed') {
-        el.textContent = getText(currentSettings.language, 'options_status_idle')
+        el.textContent = getText(appState.currentSettings.language, 'options_status_idle')
         el.dataset.status = 'idle'
       }
     }, 2000)
@@ -589,9 +606,9 @@ export default function initOptionsPage() {
 
   // 1. Initial Load: Get settings and cache meta from storage.
   // We fetch both user settings (sync/local) and the translation cache metadata (local).
-  storage.get({ ...DEFAULT_SETTINGS, exclusionSelectors: getDefaultExclusionSelectors() }, (items) => {
+  storage.get(Object.assign({}, DEFAULT_SETTINGS, { exclusionSelectors: getDefaultExclusionSelectors() }), (items) => {
     cacheStorage.get({ [LOCALE_CACHE_KEY]: null }, (cacheItems: { [LOCALE_CACHE_KEY]: Record<Exclude<LanguageCode, 'off'>, { source?: string; fetchedAt?: number }> | null }) => {
-      latestLocaleMeta = extractLocaleMeta(cacheItems[LOCALE_CACHE_KEY])
+      appState.latestLocaleMeta = extractLocaleMeta(cacheItems[LOCALE_CACHE_KEY])
       // Merge defaults with loaded items to ensure complete object
       const settings = normalizeSettings({ ...DEFAULT_SETTINGS, ...items })
       renderApp(settings)
@@ -602,7 +619,7 @@ export default function initOptionsPage() {
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== 'sync' && area !== 'local') return
 
-    const newSettings = { ...currentSettings }
+    const newSettings = { ...appState.currentSettings }
     let hasChange = false
 
     // Update settings object with any changed values
@@ -637,17 +654,17 @@ export default function initOptionsPage() {
     // The options page listens for this to update the "JSON: Cloudflare" badge.
     if (changes[LOCALE_CACHE_KEY]) {
       const newValue = changes[LOCALE_CACHE_KEY].newValue
-      latestLocaleMeta = extractLocaleMeta(newValue)
+      appState.latestLocaleMeta = extractLocaleMeta(newValue)
 
       // If we receive a NEW valid cache, we can clear the manual refresh state
       // and show the new source (e.g. Cloudflare).
       if (newValue && Object.keys(newValue).length > 0) {
-        isManuallyRefreshing = false
+        appState.isManuallyRefreshing = false
       }
 
       const root = document.getElementById('root')
-      if (root && !isManuallyRefreshing) {
-        updateLocaleBadge(root, latestLocaleMeta, newSettings)
+      if (root && !appState.isManuallyRefreshing) {
+        updateLocaleBadge(root, appState.latestLocaleMeta, newSettings)
       }
     }
 

@@ -27,7 +27,7 @@
 
 Open the extension's Options page to select your language. In the Webflow Designer, you can also switch languages instantly using the dropdown menu in the settings.
 
-Click the toolbar icon to toggle translations at any time. This acts as a master switch — the badge will show OFF when translations are disabled.
+Click the toolbar icon to toggle translations at any time. This acts as a master switch.
 
 It now supports Japanese, Traditional Chinese, Simplified Chinese, Korean, Thai, French, and Italian, with more languages to be added over time.
 
