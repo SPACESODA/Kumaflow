@@ -557,10 +557,9 @@ function bindEvents(root: HTMLElement) {
         renderApp(updatedSettings)
       }
 
-      // Clear any stored custom values, then write defaults so future loads use them.
-      storage.remove('exclusionSelectors', () => {
-        storage.set({ exclusionSelectors: defaults }, finish)
-      })
+      // Clear any stored custom values and rely on runtime defaults.
+      // Do NOT write defaults back, so extension updates can change them.
+      storage.remove('exclusionSelectors', finish)
     })
   }
 }
