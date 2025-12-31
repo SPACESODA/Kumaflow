@@ -15,6 +15,9 @@ export const EXCLUDED_SELECTORS = [
     // '.top-bar',          // Class
     // '[data-pop="wow"]',  // Attribute
     // 'nav.top',           // Tag + Class
+    // Reserved
+    '[data-type="notranslate"]',
+    'class="notranslate"',
     // Webflow Pages
     'h1 > span[data-sc="HeaderBreadcrumbTitle Text"]',
     // Webflow Designer
