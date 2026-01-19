@@ -189,7 +189,8 @@ function injectDesignerFooter(
 }
 
 function injectSimpleFooter(currentLanguage: Exclude<LanguageCode, 'off'>, isEnabled: boolean, attempt = 0) {
-    const target = document.querySelector('nav[data-sc="LeftNavView VStack Stack View"]')
+    // Webflow dashboard nav now nests under LeftNavContainer.
+    const target = document.querySelector('div[data-sc="LeftNavContainer View"] nav')
     if (!target) {
         if (attempt < MAX_RETRIES) {
             setTimeout(() => injectSimpleFooter(currentLanguage, isEnabled, attempt + 1), RETRY_INTERVAL_MS)

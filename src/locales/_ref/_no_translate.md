@@ -10,6 +10,7 @@ If these words are part of a sentence, KEEP them as they are in English within t
 - Designer / Webflow Designer
 - Editor (referring to the Webflow Designer's Editor Mode)
 - AI
+- Webflow AI
 - LLM
 - HTML
 - CSS
