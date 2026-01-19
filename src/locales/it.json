@@ -585,5 +585,8 @@
   "Notranslate": "EXCLUDE-THIS",
   "Element trigger": "",
   "Select an element on the canvas, then click + above to animate the selected element when a user interacts with it (such as on hover or click).": "",
-  "Page trigger": ""
+  "Page trigger": "",
+  "Enable Webflow AI": "",
+  "Allow users in this Workspace to use": "",
+  "features.": ""
 }
