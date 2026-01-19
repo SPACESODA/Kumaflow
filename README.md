@@ -60,7 +60,7 @@ Coming soon!
 
 ### Method 3: Build locally (Dev)
 
-1. Use Node 20 (the repo includes `.nvmrc`): `nvm use`
+1. Use Node 24 (the repo includes `.nvmrc`): `nvm use`
 2. Install dependencies and build: `npm install && npm run build`
 3. Open `chrome://extensions` (Edge: `edge://extensions`), enable Developer Mode.
 4. Click "Load unpacked" and select the `dist/chrome` folder in the repo.
